@@ -1,4 +1,4 @@
-package de.raphaelmichel.congressrouteplanner;
+package de.c3nav.droid;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -8,19 +8,19 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.ProgressBar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
+
+import de.c3nav.droid.BuildConfig;
+import de.c3nav.droid.R;
 
 public class MainActivity extends AppCompatActivity {
 
