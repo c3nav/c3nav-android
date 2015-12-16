@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private WifiManager wifiManager;
     private WifiReceiver wifiReceiver;
     private WebView webView;
+    private MobileClient mobileClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +40,14 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setCustomView(pView);
         getSupportActionBar().getCustomView().setVisibility(View.GONE);
 
+        mobileClient = new MobileClient();
+
         webView = (WebView) findViewById(R.id.webView);
 
         webView.getSettings().setSupportZoom(false);
         webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setUserAgentString("c3navClient/Android/" + BuildConfig.VERSION_CODE);
+        webView.addJavascriptInterface(mobileClient, "mobileclient");
 
         webView.setWebChromeClient(new WebChromeClient() {
 
@@ -70,6 +76,17 @@ public class MainActivity extends AppCompatActivity {
         wifiManager.startScan();
     }
 
+    class MobileClient {
+        private JSONArray nearbyStations;
+
+        @JavascriptInterface
+        public String getNearbyStations() { return this.nearbyStations.toString(); }
+
+        public void setNearbyStations(JSONArray nearbyStations) {
+            this.nearbyStations = nearbyStations;
+        }
+    }
+
     class WifiReceiver extends BroadcastReceiver {
         public void onReceive(Context c, Intent intent) {
             webView.post(new Runnable() {
@@ -87,7 +104,8 @@ public class MainActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
                     }
-                    webView.loadUrl("javascript:calculate_position(" + ja.toString() + ");");
+                    mobileClient.setNearbyStations(ja);
+                    webView.loadUrl("javascript:nearby_stations_available();");
                 }
             });
         }
