@@ -143,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
                                 // value and should not be used.
                                 newLevelValues.put(result.BSSID, result.level);
                                 if (lastLevelValues.containsKey(result.BSSID) && lastLevelValues.get(result.BSSID) == result.level) {
+                                    Log.i("scan result", "Discard " + result.BSSID + " because level did not change");
                                     continue;
                                 }
                             }
