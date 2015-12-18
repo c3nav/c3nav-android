@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.os.Build;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -29,11 +31,14 @@ public class MainActivity extends AppCompatActivity {
     private WifiReceiver wifiReceiver;
     private WebView webView;
     private MobileClient mobileClient;
+    private boolean canWifiTimestamp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        canWifiTimestamp = android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1;
 
         final View pView = LayoutInflater.from(this).inflate(R.layout.progressbar, null);
         getSupportActionBar().setDisplayShowCustomEnabled(true);
@@ -85,6 +90,11 @@ public class MainActivity extends AppCompatActivity {
         public void setNearbyStations(JSONArray nearbyStations) {
             this.nearbyStations = nearbyStations;
         }
+
+        @JavascriptInterface
+        public void scanNow() {
+            wifiManager.startScan();
+        }
     }
 
     class WifiReceiver extends BroadcastReceiver {
@@ -98,7 +108,15 @@ public class MainActivity extends AppCompatActivity {
                         JSONObject jo = new JSONObject();
                         try {
                             jo.put("bssid", result.BSSID);
+                            jo.put("ssid", result.SSID);
                             jo.put("level", result.level);
+
+                            if (canWifiTimestamp) {
+                                if (SystemClock.elapsedRealtime()-result.timestamp/1000 > 1000) {
+                                    continue;
+                                }
+                                jo.put("last", SystemClock.elapsedRealtime()-result.timestamp/1000);
+                            }
                             ja.put(jo);
                         } catch (JSONException e) {
                             e.printStackTrace();
