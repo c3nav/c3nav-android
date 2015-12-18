@@ -8,9 +8,9 @@ import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.JavascriptInterface;
@@ -21,10 +21,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.List;
-
-import de.c3nav.droid.BuildConfig;
-import de.c3nav.droid.R;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,14 +31,12 @@ public class MainActivity extends AppCompatActivity {
     private WifiReceiver wifiReceiver;
     private WebView webView;
     private MobileClient mobileClient;
-    private boolean canWifiTimestamp;
+    private Map<String, Integer> lastLevelValue = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        canWifiTimestamp = android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1;
 
         final View pView = LayoutInflater.from(this).inflate(R.layout.progressbar, null);
         getSupportActionBar().setDisplayShowCustomEnabled(true);
@@ -95,7 +92,9 @@ public class MainActivity extends AppCompatActivity {
         private JSONArray nearbyStations;
 
         @JavascriptInterface
-        public String getNearbyStations() { return this.nearbyStations.toString(); }
+        public String getNearbyStations() {
+            return this.nearbyStations.toString();
+        }
 
         public void setNearbyStations(JSONArray nearbyStations) {
             this.nearbyStations = nearbyStations;
@@ -114,18 +113,18 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     List<ScanResult> wifiList = wifiManager.getScanResults();
                     JSONArray ja = new JSONArray();
-                    for(ScanResult result : wifiList) {
+                    for (ScanResult result : wifiList) {
                         JSONObject jo = new JSONObject();
                         try {
                             jo.put("bssid", result.BSSID);
                             jo.put("ssid", result.SSID);
                             jo.put("level", result.level);
 
-                            if (canWifiTimestamp) {
-                                if (SystemClock.elapsedRealtime()-result.timestamp/1000 > 1000) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                                if (SystemClock.elapsedRealtime() - result.timestamp / 1000 > 1000) {
                                     continue;
                                 }
-                                jo.put("last", SystemClock.elapsedRealtime()-result.timestamp/1000);
+                                jo.put("last", SystemClock.elapsedRealtime() - result.timestamp / 1000);
                             }
                             ja.put(jo);
                         } catch (JSONException e) {
