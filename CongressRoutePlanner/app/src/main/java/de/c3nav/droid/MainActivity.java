@@ -89,7 +89,11 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public String getNearbyStations() {
-            return this.nearbyStations.toString();
+            if (this.nearbyStations != null) {
+                return this.nearbyStations.toString();
+            } else {
+                return "[]";
+            }
         }
 
         public void setNearbyStations(JSONArray nearbyStations) {
