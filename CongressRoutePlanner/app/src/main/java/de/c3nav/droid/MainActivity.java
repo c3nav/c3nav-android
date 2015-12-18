@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                                 // value and should not be used.
                                 newLevelValues.put(result.BSSID, result.level);
                                 if (lastLevelValues.containsKey(result.BSSID) && lastLevelValues.get(result.BSSID) == result.level) {
-                                    Log.i("scan result", "Discard " + result.BSSID + " because level did not change");
+                                    Log.d("scan result", "Discard " + result.BSSID + " because level did not change");
                                     continue;
                                 }
                             }
@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
                     }
-                    Log.i("scan result", ja.toString());
+                    Log.d("scan result", ja.toString());
                     mobileClient.setNearbyStations(ja);
                     lastLevelValues = newLevelValues;
                     webView.loadUrl("javascript:nearby_stations_available();");
