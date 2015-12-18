@@ -1,17 +1,20 @@
 package de.c3nav.droid;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.Uri;
+import android.content.pm.PackageManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.JavascriptInterface;
@@ -28,11 +31,12 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final int PERM_REQUEST = 1;
     private WifiManager wifiManager;
-    private WifiReceiver wifiReceiver;
     private WebView webView;
     private MobileClient mobileClient;
     private Map<String, Integer> lastLevelValues = new HashMap<>();
+    private boolean permAsked = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl(url_to_call);
 
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        wifiReceiver = new WifiReceiver();
+        WifiReceiver wifiReceiver = new WifiReceiver();
         registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
     }
 
@@ -112,7 +116,17 @@ public class MainActivity extends AppCompatActivity {
             webView.post(new Runnable() {
                 @Override
                 public void run() {
-
+                    int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
+                            Manifest.permission.ACCESS_FINE_LOCATION);
+                    if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                        if (!permAsked) {
+                            ActivityCompat.requestPermissions(MainActivity.this,
+                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                    PERM_REQUEST);
+                            permAsked = true;
+                        }
+                        return;
+                    }
                     List<ScanResult> wifiList = wifiManager.getScanResults();
                     JSONArray ja = new JSONArray();
                     Map<String, Integer> newLevelValues = new HashMap<String, Integer>();
@@ -142,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
                     }
+                    Log.i("scan result", ja.toString());
                     mobileClient.setNearbyStations(ja);
                     lastLevelValues = newLevelValues;
                     webView.loadUrl("javascript:nearby_stations_available();");
