@@ -10,6 +10,7 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private WifiReceiver wifiReceiver;
     private WebView webView;
     private MobileClient mobileClient;
-    private Map<String, Integer> lastLevelValue = new HashMap<>();
+    private Map<String, Integer> lastLevelValues = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,8 +112,10 @@ public class MainActivity extends AppCompatActivity {
             webView.post(new Runnable() {
                 @Override
                 public void run() {
+
                     List<ScanResult> wifiList = wifiManager.getScanResults();
                     JSONArray ja = new JSONArray();
+                    Map<String, Integer> newLevelValues = new HashMap<String, Integer>();
                     for (ScanResult result : wifiList) {
                         JSONObject jo = new JSONObject();
                         try {
@@ -125,6 +128,14 @@ public class MainActivity extends AppCompatActivity {
                                     continue;
                                 }
                                 jo.put("last", SystemClock.elapsedRealtime() - result.timestamp / 1000);
+                            } else {
+                                // Workaround for older devices: If the signal level did not change
+                                // at all since the last scan, we will assume that it is a cached
+                                // value and should not be used.
+                                newLevelValues.put(result.BSSID, result.level);
+                                if (lastLevelValues.containsKey(result.BSSID) && lastLevelValues.get(result.BSSID) == result.level) {
+                                    continue;
+                                }
                             }
                             ja.put(jo);
                         } catch (JSONException e) {
@@ -132,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                     mobileClient.setNearbyStations(ja);
+                    lastLevelValues = newLevelValues;
                     webView.loadUrl("javascript:nearby_stations_available();");
                 }
             });
