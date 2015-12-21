@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -13,13 +14,14 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,16 +39,12 @@ public class MainActivity extends AppCompatActivity {
     private MobileClient mobileClient;
     private Map<String, Integer> lastLevelValues = new HashMap<>();
     private boolean permAsked = false;
+    protected SwipeRefreshLayout swipeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        final View pView = LayoutInflater.from(this).inflate(R.layout.progressbar, null);
-        getSupportActionBar().setDisplayShowCustomEnabled(true);
-        getSupportActionBar().setCustomView(pView);
-        getSupportActionBar().getCustomView().setVisibility(View.GONE);
 
         mobileClient = new MobileClient();
 
@@ -57,18 +55,18 @@ public class MainActivity extends AppCompatActivity {
         webView.getSettings().setUserAgentString("c3navClient/Android/" + BuildConfig.VERSION_CODE);
         webView.addJavascriptInterface(mobileClient, "mobileclient");
 
-        webView.setWebChromeClient(new WebChromeClient() {
-
+        webView.setWebViewClient(new WebViewClient() {
             @Override
-            public void onProgressChanged(WebView v, int progress) {
-                if (progress < 100 && pView.getVisibility() == View.GONE) {
-                    pView.setVisibility(View.VISIBLE);
-                }
-                if (progress == 100) {
-                    pView.setVisibility(View.GONE);
-                }
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                swipeLayout.setRefreshing(false);
             }
 
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                swipeLayout.setRefreshing(true);
+            }
         });
 
         String url_to_call = BuildConfig.WEB_URL;
@@ -85,6 +83,16 @@ public class MainActivity extends AppCompatActivity {
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         WifiReceiver wifiReceiver = new WifiReceiver();
         registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+
+
+        swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
+        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                webView.reload();
+            }
+        });
+        swipeLayout.setColorSchemeResources(R.color.colorPrimary);
     }
 
     @Override
