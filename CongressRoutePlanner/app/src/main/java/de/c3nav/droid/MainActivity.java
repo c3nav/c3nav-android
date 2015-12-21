@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -31,6 +32,7 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
@@ -83,16 +85,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        String url_to_call = BuildConfig.WEB_URL;
-        Intent intent = getIntent();
-        Uri data = intent.getData();
-        if (data != null) {
-            Uri.Builder tmp_uri = data.buildUpon();
-            tmp_uri.scheme("https");
-            url_to_call = tmp_uri.build().toString();
-        }
+        CookieManager.getInstance().setCookie("https://c3nav.de/", "lang=" + Locale.getDefault().getLanguage());
 
-        webView.loadUrl(url_to_call);
+        webView.loadUrl(BuildConfig.WEB_URL);
 
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         wifiReceiver = new WifiReceiver();
