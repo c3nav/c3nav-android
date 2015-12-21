@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -31,6 +32,7 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
@@ -82,6 +84,8 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+        CookieManager.getInstance().setCookie("https://c3nav.de/", "lang=" + Locale.getDefault().getLanguage());
 
         webView.loadUrl(BuildConfig.WEB_URL);
 
