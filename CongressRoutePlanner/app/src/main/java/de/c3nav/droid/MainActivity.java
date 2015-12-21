@@ -85,9 +85,7 @@ public class MainActivity extends AppCompatActivity {
         webView.loadUrl(BuildConfig.WEB_URL);
 
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        WifiReceiver wifiReceiver = new WifiReceiver();
-        registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-
+        wifiReceiver = new WifiReceiver();
 
         swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
         swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -103,6 +101,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onPostResume() {
         super.onPostResume();
         wifiManager.startScan();
+        registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+    }
+
+    @Override
+    protected void onPause() {
+        unregisterReceiver(wifiReceiver);
+        super.onPause();
     }
 
     class MobileClient {
