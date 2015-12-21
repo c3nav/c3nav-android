@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -68,7 +69,16 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-        webView.loadUrl(BuildConfig.WEB_URL);
+        String url_to_call = BuildConfig.WEB_URL;
+        Intent intent = getIntent();
+        Uri data = intent.getData();
+        if (data != null) {
+            Uri.Builder tmp_uri = data.buildUpon();
+            tmp_uri.scheme("https");
+            url_to_call = tmp_uri.build().toString();
+        }
+
+        webView.loadUrl(url_to_call);
 
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         wifiReceiver = new WifiReceiver();
