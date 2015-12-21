@@ -10,7 +10,7 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
-        buildConfigField "String", "WEB_URL", "\"http://84.164.150.247:8042\""
+        buildConfigField "String", "WEB_URL", "\"https://c3nav.de\""
     }
     buildTypes {
         release {
