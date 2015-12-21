@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private MobileClient mobileClient;
     private Map<String, Integer> lastLevelValues = new HashMap<>();
     private boolean permAsked = false;
+    private WifiReceiver wifiReceiver;
     protected SwipeRefreshLayout swipeLayout;
 
     @Override
@@ -66,6 +68,17 @@ public class MainActivity extends AppCompatActivity {
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
                 swipeLayout.setRefreshing(true);
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                Uri u = Uri.parse(url);
+                if (BuildConfig.WEB_URL.contains(u.getHost())) {
+                    return false;
+                }
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                startActivity(intent);
+                return true;
             }
         });
 
