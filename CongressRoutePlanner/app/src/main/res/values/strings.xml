@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">c3nav</string>
+    <string name="viewc3nav">open in c3nav</string>
 </resources>
