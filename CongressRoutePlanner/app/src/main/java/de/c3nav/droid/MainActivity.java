@@ -18,8 +18,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -139,6 +137,15 @@ public class MainActivity extends AppCompatActivity {
         public void scanNow() {
             wifiManager.startScan();
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (webView.canGoBack()) {
+            webView.goBack();
+            return;
+        }
+        super.onBackPressed();
     }
 
     class WifiReceiver extends BroadcastReceiver {
