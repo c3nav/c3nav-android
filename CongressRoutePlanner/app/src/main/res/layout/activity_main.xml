@@ -4,6 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.c3nav.ActionBar"
+        android:minHeight="?attr/actionBarSize">
+    </android.support.v7.widget.Toolbar>
+
+
     <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/swipe_container"
         android:layout_width="match_parent"
@@ -13,6 +24,6 @@
             android:id="@+id/webView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
     </android.support.v4.widget.SwipeRefreshLayout>
 </LinearLayout>
