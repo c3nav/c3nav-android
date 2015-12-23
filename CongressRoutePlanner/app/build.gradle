@@ -12,10 +12,19 @@ android {
         versionName "1.0"
         buildConfigField "String", "WEB_URL", "\"https://c3nav.de\""
     }
+    signingConfigs {
+        release {
+            storeFile file("../../c3nav.keystore")
+            storePassword System.getenv("KSTOREPWD")
+            keyAlias "c3nav"
+            keyPassword System.getenv("KSTOREPWD")
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 }
