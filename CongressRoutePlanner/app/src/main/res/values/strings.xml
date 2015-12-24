@@ -3,4 +3,5 @@
     <string name="viewc3nav">c3nav</string>
     <string name="share">Share</string>
     <string name="refresh">Refresh</string>
+    <string name="shortcut_created">A shortcut has been created</string>
 </resources>
