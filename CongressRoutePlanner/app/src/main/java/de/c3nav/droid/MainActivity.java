@@ -101,13 +101,8 @@ public class MainActivity extends AppCompatActivity {
         wifiReceiver = new WifiReceiver();
 
         swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
-        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                webView.loadUrl(BuildConfig.WEB_URL);
-            }
-        });
         swipeLayout.setColorSchemeResources(R.color.colorPrimary);
+        swipeLayout.setEnabled(false);
     }
 
     @Override
@@ -179,6 +174,9 @@ public class MainActivity extends AppCompatActivity {
                 i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name));
                 i.putExtra(Intent.EXTRA_TEXT, webView.getUrl());
                 startActivity(Intent.createChooser(i, getString(R.string.share)));
+                return true;
+            case R.id.refresh:
+                webView.loadUrl(BuildConfig.WEB_URL);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
