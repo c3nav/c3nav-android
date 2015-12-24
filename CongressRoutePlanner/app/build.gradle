@@ -8,8 +8,8 @@ android {
         applicationId "de.c3nav.droid"
         minSdkVersion 8
         targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
         buildConfigField "String", "WEB_URL", "\"https://c3nav.de\""
     }
     signingConfigs {
