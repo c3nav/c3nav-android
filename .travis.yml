@@ -6,6 +6,8 @@ android:
         - build-tools-23.0.2
         - android-23
         - extra-android-m2repository
+env:
+    - TERM=dumb
 script:
     - cd CongressRoutePlanner
     - ./gradlew check lint
