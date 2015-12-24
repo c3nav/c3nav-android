@@ -135,6 +135,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @JavascriptInterface
+        public int getAppVersionCode() {
+            return BuildConfig.VERSION_CODE;
+        }
+
+        @JavascriptInterface
         public void scanNow() {
             wifiManager.startScan();
         }
