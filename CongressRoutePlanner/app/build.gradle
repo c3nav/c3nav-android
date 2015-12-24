@@ -32,6 +32,9 @@ android {
             versionNameSuffix "-debug"
         }
     }
+    lintOptions {
+        disable 'AddJavascriptInterface', 'SetJavaScriptEnabled'
+    }
 }
 
 dependencies {
