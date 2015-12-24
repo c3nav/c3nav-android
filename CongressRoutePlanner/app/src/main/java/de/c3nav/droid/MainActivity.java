@@ -155,6 +155,23 @@ public class MainActivity extends AppCompatActivity {
             i.putExtra(Intent.EXTRA_TEXT, url);
             startActivity(Intent.createChooser(i, getString(R.string.share)));
         }
+
+        @JavascriptInterface
+        public void createShortcut(String url, String title) {
+            Intent shortcutIntent = new Intent(getApplicationContext(),
+                    MainActivity.class);
+            shortcutIntent.setAction(Intent.ACTION_MAIN);
+            shortcutIntent.setData(Uri.parse(url));
+
+            Intent addIntent = new Intent();
+            addIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
+            addIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, title);
+            addIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE,
+                    Intent.ShortcutIconResource.fromContext(getApplicationContext(),
+                            R.mipmap.ic_launcher));
+            addIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
+            getApplicationContext().sendBroadcast(addIntent);
+        }
     }
 
     @Override
