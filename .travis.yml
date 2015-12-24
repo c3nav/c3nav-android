@@ -11,6 +11,7 @@ env:
 script:
     - cd CongressRoutePlanner
     - ./gradlew check lint
+    - echo app/build/outputs/lint-results.xml
 cache:
     directories:
         - $HOME/.gradle
