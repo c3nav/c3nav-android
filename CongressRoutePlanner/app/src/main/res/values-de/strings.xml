@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">c3nav</string>
-    <string name="viewc3nav">in c3nav öffnen</string>
+    <string name="viewc3nav">c3nav</string>
     <string name="share">Teilen</string>
     <string name="refresh">Aktualisieren</string>
 </resources>
