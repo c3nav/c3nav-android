@@ -10,7 +10,7 @@ android {
         targetSdkVersion 27
         versionCode 4
         versionName "1.3"
-        buildConfigField "String", "WEB_URL", "\"https://c3nav.de\""
+        buildConfigField "String", "WEB_URL", "\"https://34c3.c3nav.de\""
     }
     signingConfigs {
         release {
