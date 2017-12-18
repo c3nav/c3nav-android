@@ -14,7 +14,7 @@ env:
     - TERM=dumb
 script:
     - cd CongressRoutePlanner
-    - ./gradlew check lint
+    - ./gradlew checkDebug lintDebug
 cache:
     directories:
         - $HOME/.gradle
