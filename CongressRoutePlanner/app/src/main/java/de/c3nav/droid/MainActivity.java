@@ -54,12 +54,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setLogo(R.mipmap.ic_logo);
-        getSupportActionBar().setDisplayShowTitleEnabled(true);
-        toolbar.setTitle(getString(R.string.app_name));
-
         mobileClient = new MobileClient();
 
         webView = (WebView) findViewById(R.id.webView);
@@ -106,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
         CookieManager.getInstance().setCookie("https://c3nav.de/", "lang=" + Locale.getDefault().getLanguage());
         webView.loadUrl(url_to_call);
 
-        wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiReceiver = new WifiReceiver();
 
         swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
