@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private Map<String, Integer> lastLevelValues = new HashMap<>();
     private boolean permAsked = false;
     private WifiReceiver wifiReceiver;
-    protected SwipeRefreshLayout swipeLayout;
+    protected CustomSwipeToRefresh swipeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,16 +88,30 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        CookieManager.getInstance().setCookie("https://c3nav.de/", "lang=" + Locale.getDefault().getLanguage());
+        String url_to_call = BuildConfig.WEB_URL;
+        Intent intent = getIntent();
+        Uri data = intent.getData();
+        if (data != null) {
+            Uri.Builder tmp_uri = data.buildUpon();
+            tmp_uri.scheme("https");
+            url_to_call = tmp_uri.build().toString();
+        }
 
-        webView.loadUrl(BuildConfig.WEB_URL);
+        CookieManager.getInstance().setCookie("https://34c3.c3nav.de/", "lang=" + Locale.getDefault().getLanguage());
+        webView.loadUrl(url_to_call);
 
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiReceiver = new WifiReceiver();
 
-        swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
+        swipeLayout = (CustomSwipeToRefresh) findViewById(R.id.swipe_container);
         swipeLayout.setColorSchemeResources(R.color.colorPrimary);
-        swipeLayout.setEnabled(false);
+        swipeLayout.setEnabled(true);
+        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                webView.loadUrl(BuildConfig.WEB_URL);
+            }
+        });
     }
 
     @Override
