@@ -8,7 +8,7 @@ android {
         applicationId "de.c3nav.droid"
         minSdkVersion 14
         targetSdkVersion 27
-        versionCode 5
+        versionCode 6
         versionName "3.0"
         buildConfigField "String", "WEB_URL", "\"https://34c3.c3nav.de\""
     }
