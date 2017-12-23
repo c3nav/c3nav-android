@@ -97,7 +97,6 @@ public class MainActivity extends AppCompatActivity {
             url_to_call = tmp_uri.build().toString();
         }
 
-        CookieManager.getInstance().setCookie("https://34c3.c3nav.de/", "lang=" + Locale.getDefault().getLanguage());
         webView.loadUrl(url_to_call);
 
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
