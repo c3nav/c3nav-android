@@ -79,10 +79,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 Uri u = Uri.parse(url);
-                if (BuildConfig.WEB_URL.contains(u.getHost())) {
-                    return false;
+                if (Uri.parse(BuildConfig.WEB_URL).getHost().equals(u.getHost()) {
+                    if (u.getPathSegments().get(0) != "api") {
+                        return false;
+                    }
                 }
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                Intent intent = new Intent(Intent.ACTION_VIEW, u);
                 startActivity(intent);
                 return true;
             }
