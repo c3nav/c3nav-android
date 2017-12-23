@@ -106,12 +106,6 @@ public class MainActivity extends AppCompatActivity {
         swipeLayout = (CustomSwipeToRefresh) findViewById(R.id.swipe_container);
         swipeLayout.setColorSchemeResources(R.color.colorPrimary);
         swipeLayout.setEnabled(true);
-        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                webView.loadUrl(BuildConfig.WEB_URL);
-            }
-        });
     }
 
     @Override
