@@ -28,6 +28,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
+import android.webkit.JsResult;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
@@ -92,7 +94,6 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
 
-
             @Override
             public void onReceivedHttpAuthRequest(WebView view, final HttpAuthHandler handler, String host, String realm) {
                 LayoutInflater li = LayoutInflater.from(MainActivity.this);
@@ -107,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int id) {
                                 handler.proceed(user.getText().toString(), pass.getText().toString());
+                                dialog.dismiss();
                             }
                         });
 
@@ -118,6 +120,32 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 alertDialogBuilder.show();
+            }
+        });
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onJsBeforeUnload(WebView view, String url, String message, final JsResult result) {
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+                alertDialogBuilder.setMessage(message);
+                alertDialogBuilder.setCancelable(false)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                result.confirm();
+                                dialog.dismiss();
+                            }
+                        });
+
+                alertDialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                        result.cancel();
+                        swipeLayout.setRefreshing(false);
+                    }
+                });
+                alertDialogBuilder.show();
+                return true;
             }
         });
 
