@@ -3,6 +3,7 @@ package de.c3nav.droid;
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -16,15 +17,20 @@ import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
+import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -85,6 +91,34 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
             }
+
+
+            @Override
+            public void onReceivedHttpAuthRequest(WebView view, final HttpAuthHandler handler, String host, String realm) {
+                LayoutInflater li = LayoutInflater.from(MainActivity.this);
+                View dialogview = li.inflate(R.layout.dialog_auth, null);
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+                alertDialogBuilder.setView(dialogview);
+                final EditText user = (EditText) dialogview.findViewById(R.id.etUser);
+                final EditText pass = (EditText) dialogview.findViewById(R.id.etPassword);
+
+                alertDialogBuilder.setCancelable(false)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                handler.proceed(user.getText().toString(), pass.getText().toString());
+                            }
+                        });
+
+                alertDialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+
+                    }
+                });
+                alertDialogBuilder.show();
+            }
         });
 
         String url_to_call = BuildConfig.WEB_URL;
@@ -105,12 +139,12 @@ public class MainActivity extends AppCompatActivity {
         swipeLayout.setColorSchemeResources(R.color.colorPrimary);
         swipeLayout.setEnabled(true);
         swipeLayout.setOnRefreshListener(
-            new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    webView.reload();
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        webView.reload();
+                    }
                 }
-            }
         );
     }
 

@@ -4,4 +4,7 @@
     <string name="share">Share</string>
     <string name="refresh">Refresh</string>
     <string name="shortcut_created">A shortcut has been created</string>
+    <string name="auth_user">Username</string>
+    <string name="auth_pw">Password</string>
+    <string name="auth_title">Please be patient, c3nav is not yet available for the general public.</string>
 </resources>
