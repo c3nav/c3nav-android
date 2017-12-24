@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -103,6 +104,14 @@ public class MainActivity extends AppCompatActivity {
         swipeLayout = (CustomSwipeToRefresh) findViewById(R.id.swipe_container);
         swipeLayout.setColorSchemeResources(R.color.colorPrimary);
         swipeLayout.setEnabled(true);
+        swipeLayout.setOnRefreshListener(
+            new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    webView.reload();
+                }
+            }
+        );
     }
 
     @Override
@@ -172,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this, R.string.shortcut_created, Toast.LENGTH_SHORT).show();
         }
     }
-    
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
