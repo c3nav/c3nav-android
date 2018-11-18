@@ -1,6 +1,8 @@
 package de.c3nav.droid;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,23 +10,34 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
+import android.support.transition.AutoTransition;
+import android.support.transition.Scene;
+import android.support.transition.Transition;
+import android.support.transition.TransitionManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewAnimationUtils;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
@@ -33,7 +46,9 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -54,6 +69,18 @@ public class MainActivity extends AppCompatActivity {
     private WifiReceiver wifiReceiver;
     protected CustomSwipeToRefresh swipeLayout;
 
+    private LinearLayout splashScreen;
+    private VideoView logoAnimView;
+    private boolean hasSplashScreen;
+    private boolean logoAnimFinished = false;
+    private boolean splashScreenStarted = false;
+    private boolean splashScreenPaused = false;
+    private boolean splashScreenDone = false;
+    private boolean initialPageLoaded = false;
+    private boolean circularWebViewRevealStarted = false;
+
+    public int logoWidth = 10;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +88,31 @@ public class MainActivity extends AppCompatActivity {
 
         mobileClient = new MobileClient();
 
-        webView = (WebView) findViewById(R.id.webView);
+        splashScreen = findViewById(R.id.splashScreen);
+        logoAnimView = findViewById(R.id.logoAnimation);
+
+        webView = findViewById(R.id.webView);
+        webView.setBackgroundColor(Color.TRANSPARENT);
+        swipeLayout = findViewById(R.id.swipe_container);
+
+        // todo: decide this
+        hasSplashScreen = true;
+        if (hasSplashScreen) {
+            showSplash();
+        } else {
+            skipSplash();
+        }
+
+        swipeLayout.setColorSchemeResources(R.color.colorPrimary);
+        swipeLayout.setEnabled(true);
+        swipeLayout.setOnRefreshListener(
+            new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    webView.reload();
+                }
+            }
+        );
 
         webView.getSettings().setSupportZoom(false);
         webView.getSettings().setJavaScriptEnabled(true);
@@ -73,12 +124,16 @@ public class MainActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 swipeLayout.setRefreshing(false);
+                initialPageLoaded = true;
+                Log.d("c3navWebView", "loading ended");
+                maybeEndSplash();
             }
 
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
                 swipeLayout.setRefreshing(true);
+                Log.d("c3navWebView", "loading started");
             }
 
             @Override
@@ -162,18 +217,117 @@ public class MainActivity extends AppCompatActivity {
 
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiReceiver = new WifiReceiver();
+    }
 
-        swipeLayout = (CustomSwipeToRefresh) findViewById(R.id.swipe_container);
-        swipeLayout.setColorSchemeResources(R.color.colorPrimary);
-        swipeLayout.setEnabled(true);
-        swipeLayout.setOnRefreshListener(
-                new SwipeRefreshLayout.OnRefreshListener() {
+    protected void showSplash() {
+        splashScreenStarted = true;
+        logoAnimView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                logoAnimFinished = true;
+                skipSplash();
+                return true;
+            }
+        });
+        logoAnimView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                logoWidth = (int) (((float) mp.getVideoWidth())/mp.getVideoHeight()*50f);
+                logoAnimFinished = true;
+
+                // keep the logo for 500 more ms before checking whether the webview is loaded (it's probably not)
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
                     @Override
-                    public void onRefresh() {
-                        webView.reload();
+                    public void run() {
+                        maybeEndSplash();
                     }
+                }, 500);
+            }
+        });
+        playSplashVideo();
+    }
+
+    protected void playSplashVideo() {
+        logoAnimView.setVideoURI(Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.logoanim));
+        logoAnimView.start();
+    }
+
+    protected boolean maybeEndSplash() {
+        if (splashScreenDone || !logoAnimFinished || !initialPageLoaded) {
+            return false;
+        }
+        endSplash();
+        return true;
+    }
+
+    protected void endSplash() {
+        AutoTransition mySwapTransition = new AutoTransition();
+        mySwapTransition.addListener(new Transition.TransitionListener() {
+            private boolean transitionEnded = false;
+
+            @Override
+            public void onTransitionStart(Transition transition) { }
+
+            @Override
+            public void onTransitionEnd(Transition transition) {
+                // remove animated logo because the stuff in the background is still visible
+                splashScreen.setVisibility(View.GONE);
+                circularWebViewReveal();
+            }
+
+            @Override
+            public void onTransitionCancel(Transition transition) {}
+
+            @Override
+            public void onTransitionPause(Transition transition) { }
+
+            @Override
+            public void onTransitionResume(Transition transition) { }
+        });
+
+        TransitionManager.go(new Scene((ViewGroup) splashScreen.getParent()), mySwapTransition);
+        splashScreen.setGravity(Gravity.TOP);
+        int dip5 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, getResources().getDisplayMetrics());
+        splashScreen.setPadding(0, dip5, 0, dip5);
+        logoAnimView.getLayoutParams().height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50, getResources().getDisplayMetrics());
+        logoAnimView.requestLayout();
+    }
+
+    protected void circularWebViewReveal() {
+        if (circularWebViewRevealStarted) return;
+        circularWebViewRevealStarted = true;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            // center of the clipping circle
+            int cx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, logoWidth/2, getResources().getDisplayMetrics());
+            int cy = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 27, getResources().getDisplayMetrics());
+
+            // webview dimensions
+            int width = swipeLayout.getWidth();
+            int height = swipeLayout.getHeight();
+
+            // get the final radius for the clipping circle
+            float finalRadius = (float) Math.hypot(width - cx, height - cy);
+
+            // create the animation
+            Animator anim = ViewAnimationUtils.createCircularReveal(swipeLayout, cx, cy, 0f, finalRadius);
+            swipeLayout.setVisibility(View.VISIBLE);
+            anim.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    Log.d("c3nav", "splash animation done");
+                    splashScreenDone = true;
                 }
-        );
+            });
+            anim.start();
+        } else {
+            swipeLayout.setVisibility(View.VISIBLE);
+        }
+    }
+
+    protected void skipSplash() {
+        splashScreenDone = true;
+        splashScreen.setVisibility(View.GONE);
     }
 
     @Override
@@ -181,11 +335,17 @@ public class MainActivity extends AppCompatActivity {
         super.onPostResume();
         wifiManager.startScan();
         registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        if (splashScreenPaused && !splashScreenDone) {
+            skipSplash();
+        }
     }
 
     @Override
     protected void onPause() {
         unregisterReceiver(wifiReceiver);
+        if (splashScreenStarted && !splashScreenDone) {
+            splashScreenPaused = true;
+        }
         super.onPause();
     }
 

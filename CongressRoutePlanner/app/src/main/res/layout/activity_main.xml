@@ -1,12 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<de.c3nav.droid.CustomSwipeToRefresh xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/swipe_container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
 
-    <WebView
-        android:id="@+id/webView"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <LinearLayout
+        android:id="@+id/dummyNavbar"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@android:color/black"
+        android:gravity="top|left"
+        android:orientation="vertical"
+        android:paddingTop="5dp">
+
+        <ImageView
+            android:id="@+id/logoImage"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_gravity="left"
+            android:adjustViewBounds="true"
+            app:srcCompat="@drawable/logo" />
+    </LinearLayout>
+
+    <de.c3nav.droid.CustomSwipeToRefresh xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/swipe_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <WebView
+            android:id="@+id/webView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"></WebView>
+    </de.c3nav.droid.CustomSwipeToRefresh>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/splashScreen"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1" />
-</de.c3nav.droid.CustomSwipeToRefresh>
+        android:background="@android:color/black"
+        android:gravity="center_vertical|center_horizontal"
+        android:orientation="vertical"
+        android:paddingLeft="50dp"
+        android:paddingTop="0dp"
+        android:paddingRight="50dp"
+        android:paddingBottom="0dp"
+        android:weightSum="0">
+
+        <VideoView
+            android:id="@+id/logoAnimation"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </LinearLayout>
+</FrameLayout>
