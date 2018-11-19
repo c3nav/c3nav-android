@@ -311,7 +311,6 @@ public class MainActivity extends AppCompatActivity {
 
             // create the animation
             Animator anim = ViewAnimationUtils.createCircularReveal(swipeLayout, cx, cy, 0f, finalRadius);
-            swipeLayout.setVisibility(View.VISIBLE);
             anim.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
@@ -321,7 +320,7 @@ public class MainActivity extends AppCompatActivity {
             });
             anim.start();
         } else {
-            swipeLayout.setVisibility(View.VISIBLE);
+            // no animation, maybe insert some alternate animation?
         }
     }
 
