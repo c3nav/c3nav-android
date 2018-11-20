@@ -31,7 +31,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="34c3.c3nav.de"
+                    android:host="35c3.c3nav.de"
                     android:pathPrefix="/"
                     android:scheme="http" />
             </intent-filter>
@@ -42,7 +42,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="34c3.c3nav.de"
+                    android:host="35c3.c3nav.de"
                     android:pathPrefix="/"
                     android:scheme="https" />
             </intent-filter>
