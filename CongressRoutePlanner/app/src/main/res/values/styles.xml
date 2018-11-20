@@ -12,4 +12,8 @@
     <style name="ThemeOverlay.c3nav.ActionBar"
         parent="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
 
+    <style name="AppTheme.Launcher" parent="AppTheme" >
+        <item name="android:colorBackground">@color/splashScreenBackground</item>
+    </style>
+
 </resources>
