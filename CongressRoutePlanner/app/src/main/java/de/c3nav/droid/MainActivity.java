@@ -57,6 +57,7 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -87,6 +88,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Intent intent = getIntent();
+        Set<String> intentCategories = intent.getCategories();
+        boolean activityStartedFromLauncher = Intent.ACTION_MAIN.equals(intent.getAction())
+                && intentCategories != null && intentCategories.contains(Intent.CATEGORY_LAUNCHER);
+        boolean activityStartedFromURLFiler = Intent.ACTION_VIEW.equals(intent.getAction())
+                && intentCategories != null && (
+                        intentCategories.contains(Intent.CATEGORY_DEFAULT) ||
+                        intentCategories.contains(Intent.CATEGORY_BROWSABLE) );
+
         mobileClient = new MobileClient();
 
         splashScreen = findViewById(R.id.splashScreen);
@@ -96,9 +106,8 @@ public class MainActivity extends AppCompatActivity {
         webView.setBackgroundColor(Color.TRANSPARENT);
         swipeLayout = findViewById(R.id.swipe_container);
 
-        // todo: decide this
-        hasSplashScreen = true;
-        if (hasSplashScreen) {
+
+        if (activityStartedFromLauncher) {
             showSplash();
         } else {
             skipSplash();
@@ -206,7 +215,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         String url_to_call = BuildConfig.WEB_URL;
-        Intent intent = getIntent();
         Uri data = intent.getData();
         if (data != null) {
             Uri.Builder tmp_uri = data.buildUpon();
