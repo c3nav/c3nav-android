@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onReceivedHttpAuthRequest(WebView view, final HttpAuthHandler handler, String host, String realm) {
-                LayoutInflater li = LayoutInflater.from(MainActivity.this);
+                LayoutInflater li = MainActivity.this.getLayoutInflater();
                 View dialogview = li.inflate(R.layout.dialog_auth, null);
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
                 alertDialogBuilder.setView(dialogview);
