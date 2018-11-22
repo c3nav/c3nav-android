@@ -404,7 +404,7 @@ public class MainActivity extends AppCompatActivity {
             addIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, title);
             addIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE,
                     Intent.ShortcutIconResource.fromContext(getApplicationContext(),
-                            R.mipmap.ic_launcher));
+                            R.mipmap.ic_launcher_35c3));
             addIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
             getApplicationContext().sendBroadcast(addIntent);
 
