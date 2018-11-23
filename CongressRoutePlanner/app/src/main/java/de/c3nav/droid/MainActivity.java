@@ -148,15 +148,32 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                Uri u = Uri.parse(url);
+                final Uri u = Uri.parse(url);
                 if (Uri.parse(BuildConfig.WEB_URL).getHost().equals(u.getHost())) {
                     List<String> pathSegments = u.getPathSegments();
                     if (pathSegments.isEmpty() || !pathSegments.get(0).equals("api")) {
                         return false;
                     }
                 }
-                Intent intent = new Intent(Intent.ACTION_VIEW, u);
-                startActivity(intent);
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+                alertDialogBuilder.setMessage(getString(R.string.url_outside_message) + " " + url);
+                alertDialogBuilder.setCancelable(false);
+                alertDialogBuilder.setIcon(android.R.drawable.ic_dialog_alert);
+                alertDialogBuilder.setPositiveButton(R.string.url_outside_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        Intent intent = new Intent(Intent.ACTION_VIEW, u);
+                        startActivity(intent);
+                    }
+                });
+                alertDialogBuilder.setNegativeButton(R.string.url_outside_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.cancel();
+                    }
+                });
+                alertDialogBuilder.show();
                 return true;
             }
 
