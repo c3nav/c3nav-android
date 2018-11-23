@@ -44,6 +44,7 @@ import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
@@ -180,12 +181,12 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                final Uri u = Uri.parse(url);
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                final Uri u = request.getUrl();
                 if (Uri.parse(BuildConfig.WEB_URL).getHost().equals(u.getHost())) {
                     List<String> pathSegments = u.getPathSegments();
                     if (pathSegments.isEmpty() || !pathSegments.get(0).equals("api")) {
-                        return false;
+                        return super.shouldOverrideUrlLoading(view, request);
                     }
                 }
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
