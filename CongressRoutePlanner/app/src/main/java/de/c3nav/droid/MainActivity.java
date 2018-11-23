@@ -21,6 +21,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.support.transition.AutoTransition;
 import android.support.transition.Scene;
+import android.support.transition.Slide;
 import android.support.transition.Transition;
 import android.support.transition.TransitionManager;
 import android.support.v4.app.ActivityCompat;
@@ -45,8 +46,10 @@ import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -72,6 +75,12 @@ public class MainActivity extends AppCompatActivity {
 
     private LinearLayout splashScreen;
     private VideoView logoAnimView;
+    private LinearLayout logoScreen;
+    private TextView logoScreenMessage;
+    private EditText authUsername;
+    private EditText authPassword;
+    private TextView authMessage;
+    private Button authLoginButton;
     private boolean hasSplashScreen;
     private boolean logoAnimFinished = false;
     private boolean splashScreenStarted = false;
@@ -79,6 +88,10 @@ public class MainActivity extends AppCompatActivity {
     private boolean splashScreenDone = false;
     private boolean initialPageLoaded = false;
     private boolean circularWebViewRevealStarted = false;
+
+    private boolean httpAuthNeeded = false;
+    private HttpAuthHandler lastAuthHandler = null;
+    private boolean loginScreenIsActive = false;
 
     public int logoWidth = 10;
 
@@ -101,6 +114,25 @@ public class MainActivity extends AppCompatActivity {
 
         splashScreen = findViewById(R.id.splashScreen);
         logoAnimView = findViewById(R.id.logoAnimation);
+
+        logoScreen = findViewById(R.id.logoScreen);
+        logoScreenMessage = findViewById(R.id.logoScreenMessage);
+        authUsername = findViewById(R.id.authUsername);
+        authPassword = findViewById(R.id.authPassword);
+        authMessage = findViewById(R.id.authMessage);
+        authLoginButton = findViewById(R.id.authLoginButton);
+
+        authLoginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (lastAuthHandler != null) {
+                    lastAuthHandler.proceed(authUsername.getText().toString(), authPassword.getText().toString());
+                    lastAuthHandler = null;
+                    authLoginButton.setEnabled(false);
+                }
+
+            }
+        });
 
         webView = findViewById(R.id.webView);
         webView.setBackgroundColor(Color.TRANSPARENT);
@@ -137,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
                 initialPageLoaded = true;
                 Log.d("c3navWebView", "loading ended");
                 maybeEndSplash();
+                maybeHideLoginScreen();
             }
 
             @Override
@@ -179,30 +212,9 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onReceivedHttpAuthRequest(WebView view, final HttpAuthHandler handler, String host, String realm) {
-                LayoutInflater li = MainActivity.this.getLayoutInflater();
-                View dialogview = li.inflate(R.layout.dialog_auth, null);
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
-                alertDialogBuilder.setView(dialogview);
-                final EditText user = (EditText) dialogview.findViewById(R.id.etUser);
-                final EditText pass = (EditText) dialogview.findViewById(R.id.etPassword);
-
-                alertDialogBuilder.setCancelable(false)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id) {
-                                handler.proceed(user.getText().toString(), pass.getText().toString());
-                                dialog.dismiss();
-                            }
-                        });
-
-                alertDialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-
-                    }
-                });
-                alertDialogBuilder.show();
+                httpAuthNeeded = true;
+                lastAuthHandler = handler;
+                maybeShowLoginScreen();
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
@@ -252,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
                 logoAnimFinished = true;
-                skipSplash();
+                if(!splashScreenDone) skipSplash();
                 return true;
             }
         });
@@ -270,6 +282,7 @@ public class MainActivity extends AppCompatActivity {
                         maybeEndSplash();
                     }
                 }, 500);
+                maybeShowLoginScreen();
             }
         });
         playSplashVideo();
@@ -343,6 +356,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onAnimationEnd(Animator animation) {
                     Log.d("c3nav", "splash animation done");
                     splashScreenDone = true;
+                    unloadSplashVideo();
                 }
             });
             anim.start();
@@ -351,9 +365,81 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    protected void unloadSplashVideo() {
+        logoAnimView.setVideoPath("");
+    }
+
     protected void skipSplash() {
         splashScreenDone = true;
         splashScreen.setVisibility(View.GONE);
+        unloadSplashVideo();
+    }
+
+    protected void showLogoScreen() {
+        if (!splashScreenDone) {
+            skipSplash();
+        } else {
+            TransitionManager.go(new Scene((ViewGroup) logoScreen.getParent()), new Slide(Gravity.LEFT));
+        }
+        logoScreen.setVisibility(View.VISIBLE);
+        logoScreenMessage.setVisibility(View.GONE);
+        authUsername.setVisibility(View.GONE);
+        authPassword.setVisibility(View.GONE);
+        authMessage.setVisibility(View.GONE);
+        authLoginButton.setVisibility(View.GONE);
+    }
+
+    protected void showLoginScreen(String message) {
+        showLogoScreen();
+        logoScreenMessage.setText(R.string.auth_title);
+        authMessage.setText(message);
+        authLoginButton.setEnabled(true);
+        logoScreen.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                TransitionManager.go(new Scene((ViewGroup) logoScreen.getParent()), new AutoTransition());
+                logoScreenMessage.setVisibility(View.VISIBLE);
+                authUsername.setVisibility(View.VISIBLE);
+                authPassword.setVisibility(View.VISIBLE);
+                authMessage.setVisibility(View.VISIBLE);
+                authLoginButton.setVisibility(View.VISIBLE);
+            }
+        }, 500);
+        loginScreenIsActive = true;
+    }
+
+    protected void showLoginScreen(int message) {
+        showLoginScreen(getString(message));
+    }
+
+    protected void showLoginScreen() {
+        showLoginScreen("");
+    }
+
+    protected void hideLoginScreen() {
+        TransitionManager.go(new Scene((ViewGroup) logoScreen.getParent()), new Slide(Gravity.LEFT));
+        logoScreen.setVisibility(View.GONE);
+        logoScreenMessage.setVisibility(View.GONE);
+        authUsername.setVisibility(View.GONE);
+        authPassword.setVisibility(View.GONE);
+        authMessage.setVisibility(View.GONE);
+        authLoginButton.setVisibility(View.GONE);
+    }
+
+    protected void maybeShowLoginScreen() {
+        if (httpAuthNeeded && (splashScreenDone || logoAnimFinished)) {
+            if (loginScreenIsActive) {
+                showLoginScreen("ERROR");
+            } else {
+                showLoginScreen();
+            }
+        }
+    }
+
+    protected void maybeHideLoginScreen() {
+        if (loginScreenIsActive && initialPageLoaded) {
+            hideLoginScreen();
+        }
     }
 
     @Override

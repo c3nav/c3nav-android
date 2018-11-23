@@ -8,6 +8,7 @@
     <string name="auth_user">Nutzername</string>
     <string name="auth_pw">Passwort</string>
     <string name="auth_title">Wir bitten um etwas Geduld, c3nav ist noch nicht öffentlich verfügbar.</string>
+    <string name="auth_login">Anmelden</string>
     <string name="url_outside_message">Achtung, dieser Link zeit auf eine seite außerhalb von c3nav:</string>
     <string name="url_outside_ok">Fortfahren</string>
     <string name="url_outside_cancel">Abbrechen</string>

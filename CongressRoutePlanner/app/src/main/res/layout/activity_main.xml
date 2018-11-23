@@ -55,4 +55,68 @@
             android:layout_height="match_parent" />
 
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/logoScreen"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        android:gravity="center_vertical|center_horizontal"
+        android:orientation="vertical"
+        android:paddingLeft="50dp"
+        android:paddingTop="0dp"
+        android:paddingRight="50dp"
+        android:paddingBottom="0dp"
+        android:visibility="gone"
+        android:weightSum="0">
+
+
+        <ImageView
+            android:id="@+id/logoScreenLogo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            app:srcCompat="@drawable/logo_360" />
+
+        <TextView
+            android:id="@+id/logoScreenMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:visibility="gone" />
+
+        <EditText
+            android:id="@+id/authUsername"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints=".AUTOFILL_HINT_USERNAME"
+            android:ems="10"
+            android:hint="@string/auth_user"
+            android:inputType="textNoSuggestions"
+            android:visibility="gone" />
+
+        <EditText
+            android:id="@+id/authPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints=".AUTOFILL_HINT_PASSWORD"
+            android:ems="10"
+            android:hint="@string/auth_pw"
+            android:inputType="textPassword"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/authMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/authLoginButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/auth_login"
+            android:visibility="gone" />
+    </LinearLayout>
 </FrameLayout>
