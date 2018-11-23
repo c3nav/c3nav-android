@@ -150,7 +150,8 @@ public class MainActivity extends AppCompatActivity {
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 Uri u = Uri.parse(url);
                 if (Uri.parse(BuildConfig.WEB_URL).getHost().equals(u.getHost())) {
-                    if (!u.getPathSegments().get(0).equals("api")) {
+                    List<String> pathSegments = u.getPathSegments();
+                    if (pathSegments.isEmpty() || !pathSegments.get(0).equals("api")) {
                         return false;
                     }
                 }
