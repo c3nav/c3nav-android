@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.support.annotation.RequiresApi;
 import android.support.transition.AutoTransition;
 import android.support.transition.Scene;
 import android.support.transition.Slide;
@@ -180,24 +181,22 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("c3navWebView", "loading started");
             }
 
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                final Uri u = request.getUrl();
-                if (Uri.parse(BuildConfig.WEB_URL).getHost().equals(u.getHost())) {
-                    List<String> pathSegments = u.getPathSegments();
+            private boolean shouldOverrideUrl(final Uri uri) {
+                if (Uri.parse(BuildConfig.WEB_URL).getHost().equals(uri.getHost())) {
+                    List<String> pathSegments = uri.getPathSegments();
                     if (pathSegments.isEmpty() || !pathSegments.get(0).equals("api")) {
-                        return super.shouldOverrideUrlLoading(view, request);
+                        return false;
                     }
                 }
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
-                alertDialogBuilder.setMessage(getString(R.string.url_outside_message) + " " + url);
+                alertDialogBuilder.setMessage(getString(R.string.url_outside_message) + " " + uri.toString());
                 alertDialogBuilder.setCancelable(false);
                 alertDialogBuilder.setIcon(android.R.drawable.ic_dialog_alert);
                 alertDialogBuilder.setPositiveButton(R.string.url_outside_ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
-                        Intent intent = new Intent(Intent.ACTION_VIEW, u);
+                        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                         startActivity(intent);
                     }
                 });
@@ -209,6 +208,18 @@ public class MainActivity extends AppCompatActivity {
                 });
                 alertDialogBuilder.show();
                 return true;
+            }
+
+            @SuppressWarnings("deprication")
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP && shouldOverrideUrl(Uri.parse(url))) || super.shouldOverrideUrlLoading(view, url);
+            }
+
+            @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                return shouldOverrideUrl(request.getUrl()) || super.shouldOverrideUrlLoading(view, request);
             }
 
             @Override
