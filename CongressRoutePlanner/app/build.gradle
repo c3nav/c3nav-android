@@ -29,12 +29,14 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            zipAlignEnabled true
             signingConfig signingConfigs.release
         }
         debug {
             debuggable true
             applicationIdSuffix ".debug"
             versionNameSuffix "-debug"
+            zipAlignEnabled true
         }
     }
     lintOptions {
