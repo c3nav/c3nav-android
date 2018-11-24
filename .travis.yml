@@ -21,6 +21,7 @@ script:
     - ./gradlew lintDebug assembleDebug
 
 before_deploy:
+    - cd "$TRAVIS_BUILD_DIR"
     - cp CongressRoutePlanner/app/build/outputs/apk/debug/app-debug.apk c3nav-debug.apk
     - apksigner sign --ks c3nav-debug.jks --ks-key-alias c3nav-debug --ks-pass env:KSTOREPWD --key-pass env:KSTOREPWD c3nav-debug.apk
     - apksigner verify c3nav-debug.apk
