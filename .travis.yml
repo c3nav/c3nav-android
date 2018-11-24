@@ -9,10 +9,32 @@ android:
         - android-27
         - extra-android-m2repository
 env:
-    - TERM=dumb
+    global:
+        - TERM=dumb
+        - secure: "hi+qEzW5PzqmKjentE86nm8D1Ne7AAZ/B33r3CZOS+PrE656HY9d670vcvz3jTVC6mFyJw8Ywjag+v5zYI3GXXtjXaiuAMUUZnu46e8eag3YdMQGX2qenv/+ILmdslfMyEMdasqtVPVtOkKnsINitUw814Db5cmBeb8OXX5XArLMJZVzANXdAN+lhDvrK7ZZo+OJXNvTSKLB91dSMdO5aIeVtaDEuK/HCC5AlBURc6IYHzB2bHZEjfnziohGg/wFTpMGPvX4l62ZnMy7eV6mQ2YrQPHHepaw9CQhOrdCuNAuwwgYwZhUSeoQLJLzKAHMPsHv2XLogQ9HNyHe/j2v7wnv4axW7d2oAe6zNR+8HVxvXjPhlK0VoyvJi31T+GC+tINQ1MO0ITygUk9+5Tt00jYajycJoiG4jKmz4P8oCXZy96pAhA5u7P1tIbvFCYib8+EwWnPLm/2O9Dc8Lq/y1/TYU4btNVi/xKPccugJSK3LBU0pYbwAtG2bVCb0Xbf2zl50necM4CnNhscx8nIUJyR2jYkiUEOyPEYb+6NLg4vSdWNU/fhGQhDdhA0cl9bnIFzG5a7gNQKbLoh9dQtun4oq7Kf+CgTmIjEGnmBKgUCXhLJT1aS5gvFJohqO38SiikWxbN6+iQmGzzsP5lLF3hPe5ryhxgduUH/wl2KuhqE="
+
+before_install:
+    - openssl aes-256-cbc -K $encrypted_7989a1adf9c4_key -iv $encrypted_7989a1adf9c4_iv -in c3nav-debug.jks.enc -out c3nav-debug.jks -d
+
 script:
     - cd CongressRoutePlanner
-    - ./gradlew lintDebug
+    - ./gradlew lintDebug assembleDebug
+
+before_deploy:
+    - cp CongressRoutePlanner/app/build/outputs/apk/debug/app-debug.apk c3nav-debug.apk
+    - apksigner sign --ks c3nav-debug.jks --ks-key-alias c3nav-debug --ks-pass env:KSTOREPWD --key-pass env:KSTOREPWD c3nav-debug.apk
+    - apksigner verify c3nav-debug.apk
+
+deploy:
+    provider: releases
+    api_key:
+        secure: "HTyMZ7IZ2fvcMQaHoiCiDWOWxBzi0jVfIPG7zMbVPK4FGqR/kq0utPZ0qio+ixs5M/3PzG1pqAeOC5+M4HOwyYCG8znGMdfIuvIy0/z4feXsjm/MvUJX+DJJeobVXXY6XNF8ovscGCr0MGv+CeszkYFKtP9QYR/lm5Tz/vJBXAcMo1rlYdsFOx/wZSZyaDUsSH5HviPUtGhFSLv3RSE2ALDfkFvGr3gDHKpc+Kv9B34MHP9F1f8SVk9L0cpo9OuMP8qS2uyhwx7w/V8eBccF8BXlQgdLBvs91iu4mte2/qlWMHgXva+smWN7NaQXt43KPjSQAp7TjlQIt90z8vPxihEMlS8/6RxVK7CSPRcn5c0DFhuARvubm7u+/DHt2kiEwYtk6vjO31t0YUzSRBxk+33+/3DigM12a7AYxVnOtPcmz5nEPquLlTZLseovzO4u5dPPVUnY/GJdAcjwfWC22BGviC7/gT5nme811ETPiTelim54X8ryWXtNMvii8Q0KcFAhDiDrLIp0o2xd9jlT/XuZHp8qo8+yJznFqtYWiie6T51vl+KHNHIC7Nnc1tF5wda6ncjSMfhcL3RNwcAGCZ0s4/SqK9KbvhIPV+6m9uRK1lv7CQv+lqFW0D49I0Nnn6TugVw78fWl6i0po0E/0d7bck7Irdcpuv9S1cvUue0="
+    file: c3nav-debug.apk
+    skip_cleanup: true
+    draft: true
+
 cache:
     directories:
         - $HOME/.gradle
+        - $HOME/.gradle/wrapper/
+        - $HOME/.android/build-cache
