@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean httpAuthNeeded = false;
     private HttpAuthHandler lastAuthHandler = null;
+    private boolean logoScreenIsVisible = false;
     private boolean loginScreenIsActive = false;
 
     public int logoWidth = 10;
@@ -131,6 +132,10 @@ public class MainActivity extends AppCompatActivity {
                     lastAuthHandler.proceed(authUsername.getText().toString(), authPassword.getText().toString());
                     lastAuthHandler = null;
                     authLoginButton.setEnabled(false);
+                    authUsername.setEnabled(false);
+                    authPassword.setEnabled(false);
+                } else {
+                    hideLoginScreen();
                 }
 
             }
@@ -390,8 +395,10 @@ public class MainActivity extends AppCompatActivity {
     protected void showLogoScreen() {
         if (!splashScreenDone) {
             skipSplash();
+        } else if (logoScreenIsVisible || loginScreenIsActive) {
+            TransitionManager.go(new Scene((ViewGroup) logoScreen.getParent()), new AutoTransition());
         } else {
-            TransitionManager.go(new Scene((ViewGroup) logoScreen.getParent()), new Slide(Gravity.LEFT));
+            TransitionManager.go(new Scene((ViewGroup) logoScreen.getParent()), new Slide(Gravity.RIGHT));
         }
         logoScreen.setVisibility(View.VISIBLE);
         logoScreenMessage.setVisibility(View.GONE);
@@ -399,13 +406,19 @@ public class MainActivity extends AppCompatActivity {
         authPassword.setVisibility(View.GONE);
         authMessage.setVisibility(View.GONE);
         authLoginButton.setVisibility(View.GONE);
+        logoScreenIsVisible = true;
     }
 
     protected void showLoginScreen(String message) {
-        showLogoScreen();
+        if (!logoScreenIsVisible) showLogoScreen();
         logoScreenMessage.setText(R.string.auth_title);
         authMessage.setText(message);
+        authUsername.setEnabled(true);
+        authPassword.setEnabled(true);
         authLoginButton.setEnabled(true);
+
+        if (loginScreenIsActive) return;
+
         logoScreen.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -436,6 +449,8 @@ public class MainActivity extends AppCompatActivity {
         authPassword.setVisibility(View.GONE);
         authMessage.setVisibility(View.GONE);
         authLoginButton.setVisibility(View.GONE);
+        loginScreenIsActive = false;
+        logoScreenIsVisible = false;
     }
 
     protected void maybeShowLoginScreen() {
