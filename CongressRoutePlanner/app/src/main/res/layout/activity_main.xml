@@ -1,122 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black">
+    android:fitsSystemWindows="true"
+    tools:openDrawer="start">
 
-    <LinearLayout
-        android:id="@+id/dummyNavbar"
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@android:color/black"
-        android:gravity="top|left"
-        android:orientation="vertical"
-        android:paddingTop="5dp">
+        android:layout_height="match_parent"
+        android:background="@android:color/black">
 
-        <ImageView
-            android:id="@+id/logoImage"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_gravity="left"
-            android:adjustViewBounds="true"
-            app:srcCompat="@drawable/logo" />
-    </LinearLayout>
+        <LinearLayout
+            android:id="@+id/dummyNavbar"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@android:color/black"
+            android:gravity="top|left"
+            android:orientation="vertical"
+            android:paddingTop="5dp">
 
-    <de.c3nav.droid.CustomSwipeToRefresh xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/swipe_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+            <ImageView
+                android:id="@+id/logoImage"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_gravity="left"
+                android:adjustViewBounds="true"
+                app:srcCompat="@drawable/logo" />
+        </LinearLayout>
 
-        <WebView
-            android:id="@+id/webView"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"></WebView>
-    </de.c3nav.droid.CustomSwipeToRefresh>
+            android:orientation="vertical">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/splashScreen"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@android:color/black"
-        android:gravity="center_vertical|center_horizontal"
-        android:orientation="vertical"
-        android:paddingLeft="50dp"
-        android:paddingTop="0dp"
-        android:paddingRight="50dp"
-        android:paddingBottom="0dp"
-        android:weightSum="0">
+            <include
+                layout="@layout/app_bar_main"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
-        <VideoView
-            android:id="@+id/logoAnimation"
+            <de.c3nav.droid.CustomSwipeToRefresh
+                android:id="@+id/swipe_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <WebView
+                    android:id="@+id/webView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"></WebView>
+            </de.c3nav.droid.CustomSwipeToRefresh>
+        </LinearLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/splashScreen"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/black"
+            android:gravity="center_vertical|center_horizontal"
+            android:orientation="vertical"
+            android:paddingLeft="50dp"
+            android:paddingTop="0dp"
+            android:paddingRight="50dp"
+            android:paddingBottom="0dp"
+            android:weightSum="0">
+
+            <VideoView
+                android:id="@+id/logoAnimation"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </LinearLayout>
+
+        <include
+            layout="@layout/view_login"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+    </FrameLayout>
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/logoScreen"
-        android:layout_width="match_parent"
+    <android.support.design.widget.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:background="@android:color/black"
-        android:gravity="center_vertical|center_horizontal"
-        android:orientation="vertical"
-        android:paddingLeft="50dp"
-        android:paddingTop="0dp"
-        android:paddingRight="50dp"
-        android:paddingBottom="0dp"
-        android:visibility="gone"
-        android:weightSum="0">
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        app:menu="@menu/main" />
 
-
-        <ImageView
-            android:id="@+id/logoScreenLogo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
-            app:srcCompat="@drawable/logo_360" />
-
-        <TextView
-            android:id="@+id/logoScreenMessage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:visibility="gone" />
-
-        <EditText
-            android:id="@+id/authUsername"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autofillHints=".AUTOFILL_HINT_USERNAME"
-            android:ems="10"
-            android:hint="@string/auth_user"
-            android:inputType="textNoSuggestions"
-            android:visibility="gone" />
-
-        <EditText
-            android:id="@+id/authPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autofillHints=".AUTOFILL_HINT_PASSWORD"
-            android:ems="10"
-            android:hint="@string/auth_pw"
-            android:inputType="textPassword"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/authMessage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:visibility="gone" />
-
-        <Button
-            android:id="@+id/authLoginButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/auth_login"
-            android:visibility="gone" />
-    </LinearLayout>
-</FrameLayout>
+</android.support.v4.widget.DrawerLayout>
