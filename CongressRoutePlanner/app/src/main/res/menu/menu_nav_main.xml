@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <group >
+        <item
+            android:id="@+id/editor_main"
+            android:title="editor" />
+        <item
+            android:id="@+id/editorAccountPage"
+            android:title="editor account" />
+    </group>
+    <group >
+        <item
+            android:id="@+id/loginLogout"
+            android:title="logout" />
+        <item
+            android:id="@+id/accountPage"
+            android:title="accoount" />
+        <item
+            android:id="@+id/controlPanel"
+            android:title="control panel" />
+    </group>
+    <group >
+        <item
+            android:id="@+id/api"
+            android:title="api" />
+        <item
+            android:id="@+id/github"
+            android:title="github" />
+        <item
+            android:id="@+id/about"
+            android:title="about" />
+    </group>
+</menu>

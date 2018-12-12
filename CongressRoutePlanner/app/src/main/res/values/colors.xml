@@ -4,4 +4,5 @@
     <color name="colorPrimaryDark">#000000</color>
     <color name="colorAccent">#009982</color>
     <color name="splashScreenBackground">#000000</color>
+    <color name="colorWarning">#ff5900</color>
 </resources>
