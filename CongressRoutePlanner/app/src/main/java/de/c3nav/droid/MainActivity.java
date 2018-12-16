@@ -553,6 +553,11 @@ public class MainActivity extends AppCompatActivity {
 
             Toast.makeText(MainActivity.this, R.string.shortcut_created, Toast.LENGTH_SHORT).show();
         }
+
+        @JavascriptInterface
+        public void setUserData(String data) {
+            Log.d("setUserData", data);
+        }
     }
 
     @Override
