@@ -38,12 +38,10 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/toolbar"
+            <include
+                layout="@layout/app_bar_main"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
-                android:theme="@style/ThemeOverlay.c3nav.ActionBar" />
+                android:layout_height="match_parent" />
 
             <de.c3nav.droid.CustomSwipeToRefresh
                 android:id="@+id/swipe_container"
