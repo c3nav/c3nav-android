@@ -11,12 +11,14 @@
         <item
             android:id="@+id/editorChangesLink"
             android:icon="@drawable/ic_assignment"
-            tools:title="No objects changed"
-            tools:ignore="MenuTitle" />
+            android:visible="false"
+            tools:ignore="MenuTitle"
+            tools:title="No objects changed" />
         <item
             android:id="@+id/editorDashboardLink"
             android:icon="@drawable/ic_dashboard"
-            android:title="Editor Dashboard" />
+            android:title="Editor Dashboard"
+            android:visible="false" />
     </group>
     <group android:id="@+id/mainNav">
         <item
@@ -26,11 +28,13 @@
         <item
             android:id="@+id/editorLink"
             android:icon="@drawable/ic_edit"
-            android:title="@string/editor" />
+            android:title="@string/editor"
+            android:visible="false" />
         <item
             android:id="@+id/controlPanelLink"
             android:icon="@drawable/ic_build"
-            android:title="@string/control_panel" />
+            android:title="@string/control_panel"
+            android:visible="false" />
     </group>
     <group android:id="@+id/aboutNav">
         <item
