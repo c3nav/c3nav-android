@@ -91,6 +91,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView authMessage;
     private Button authLoginButton;
 
+    private boolean loggedIn = false;
+
     private TextView navHeaderTitle;
     private TextView navHeaderSubtitle;
 
@@ -145,7 +147,11 @@ public class MainActivity extends AppCompatActivity {
                         mDrawerLayout.closeDrawers();
                         switch (item.getItemId()) {
                             case R.id.accountLink:
-                                webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/account/").build().toString());
+                                if (loggedIn) {
+                                    webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/account/").build().toString());
+                                } else {
+                                    webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/login").appendQueryParameter("next", Uri.parse(webView.getUrl()).getPath()).build().toString());
+                                }
                                 return true;
                             case R.id.editorChangesLink:
                                 webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/editor/changeset/").build().toString());
@@ -633,8 +639,6 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void run() {
-
-                    boolean loggedIn;
                     try {
                         loggedIn = user_data.getBoolean("logged_in");
                     } catch (JSONException e) {
