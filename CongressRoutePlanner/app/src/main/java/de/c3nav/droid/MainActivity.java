@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int PERM_REQUEST = 1;
     private WifiManager wifiManager;
     private DrawerLayout mDrawerLayout;
+    private Toolbar toolbar;
     private WebView webView;
     private MobileClient mobileClient;
     private Map<String, Integer> lastLevelValues = new HashMap<>();
@@ -101,20 +102,16 @@ public class MainActivity extends AppCompatActivity {
     private boolean logoScreenIsVisible = false;
     private boolean loginScreenIsActive = false;
 
-    public int logoWidth = 10;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setLogo(R.drawable.logo);
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(false);
-        actionBar.setDisplayUseLogoEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
 
@@ -305,7 +302,6 @@ public class MainActivity extends AppCompatActivity {
         logoAnimView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                logoWidth = (int) (((float) mp.getVideoWidth())/mp.getVideoHeight()*50f);
                 logoAnimFinished = true;
 
                 // keep the logo for 500 more ms before checking whether the webview is loaded (it's probably not)
@@ -361,10 +357,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         TransitionManager.go(new Scene((ViewGroup) splashScreen.getParent()), mySwapTransition);
-        splashScreen.setGravity(Gravity.TOP);
-        int dip5 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5, getResources().getDisplayMetrics());
-        splashScreen.setPadding(0, dip5, 0, dip5);
-        logoAnimView.getLayoutParams().height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50, getResources().getDisplayMetrics());
+        splashScreen.setGravity(Gravity.TOP|Gravity.CENTER);
+        logoAnimView.getLayoutParams().height = (int) toolbar.getHeight();
         logoAnimView.requestLayout();
     }
 
@@ -373,8 +367,8 @@ public class MainActivity extends AppCompatActivity {
         circularWebViewRevealStarted = true;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             // center of the clipping circle
-            int cx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, logoWidth/2, getResources().getDisplayMetrics());
-            int cy = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 27, getResources().getDisplayMetrics());
+            int cx = (int) swipeLayout.getWidth()/2;
+            int cy = (int) toolbar.getHeight()/2;
 
             // webview dimensions
             int width = swipeLayout.getWidth();

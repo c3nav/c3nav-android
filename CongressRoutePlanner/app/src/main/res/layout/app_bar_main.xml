@@ -4,4 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
     android:background="?attr/colorPrimary"
-    android:theme="@style/ThemeOverlay.c3nav.ActionBar" />
+    android:theme="@style/ThemeOverlay.c3nav.ActionBar">
+
+</android.support.v7.widget.Toolbar>
