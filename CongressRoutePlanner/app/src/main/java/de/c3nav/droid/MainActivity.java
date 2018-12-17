@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
@@ -20,6 +21,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.NavigationView;
 import android.support.transition.AutoTransition;
 import android.support.transition.Scene;
 import android.support.transition.Slide;
@@ -35,11 +37,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -73,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int PERM_REQUEST = 1;
     private WifiManager wifiManager;
     private DrawerLayout mDrawerLayout;
+    private NavigationView navigationView;
     private Toolbar toolbar;
     private WebView webView;
     private MobileClient mobileClient;
@@ -89,6 +88,10 @@ public class MainActivity extends AppCompatActivity {
     private EditText authPassword;
     private TextView authMessage;
     private Button authLoginButton;
+
+    private TextView navHeaderTitle;
+    private TextView navHeaderSubtitle;
+    private TextView navHeaderSubtitleWarning;
     private boolean logoAnimFinished = false;
     private boolean splashScreenStarted = false;
     private boolean splashScreenPaused = false;
@@ -125,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
                         intentCategories.contains(Intent.CATEGORY_BROWSABLE) );
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
 
         mobileClient = new MobileClient();
 
@@ -153,6 +157,11 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        View headerLayout = navigationView.getHeaderView(0);
+        navHeaderTitle = headerLayout.findViewById(R.id.navHeaderTitle);
+        navHeaderSubtitle = headerLayout.findViewById(R.id.navHeaderSubtitle);
+        navHeaderSubtitleWarning = headerLayout.findViewById(R.id.navHeaderSubtitleWarning);
 
         webView = findViewById(R.id.webView);
         webView.setBackgroundColor(Color.TRANSPARENT);
@@ -555,6 +564,31 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void setUserData(String data) {
             Log.d("setUserData", data);
+
+            JSONObject user_data;
+            try {
+                user_data = new JSONObject(data);
+            } catch (JSONException e) {
+                Log.d("c3nav", "invalid JSON in setUserData: " + data);
+                return;
+            }
+
+            boolean loggedIn;
+            try {
+                loggedIn = user_data.getBoolean("logged_in");
+            } catch (JSONException e) {
+                return;
+            }
+
+            if (loggedIn) {
+                navHeaderTitle.setText(user_data.optString("title"));
+                navHeaderTitle.setTypeface(null, Typeface.NORMAL);
+                navHeaderSubtitle.setText(user_data.optString("subtitle"));
+            } else {
+                navHeaderTitle.setText(R.string.not_logged_in);
+                navHeaderTitle.setTypeface(null, Typeface.ITALIC);
+                navHeaderSubtitle.setText("");
+            }
         }
     }
 

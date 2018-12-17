@@ -12,4 +12,5 @@
     <string name="url_outside_message">Achtung, dieser Link zeit auf eine seite außerhalb von c3nav:</string>
     <string name="url_outside_ok">Fortfahren</string>
     <string name="url_outside_cancel">Abbrechen</string>
+    <string name="not_logged_in">Nicht eingeloggt</string>
 </resources>
