@@ -93,7 +93,13 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView navHeaderTitle;
     private TextView navHeaderSubtitle;
-    private TextView navHeaderSubtitleWarning;
+
+    private MenuItem accountLink;
+    private MenuItem editorChangesLink;
+    private MenuItem editorDashboardLink;
+    private MenuItem editorLink;
+    private MenuItem controlPanelLink;
+
     private boolean logoAnimFinished = false;
     private boolean splashScreenStarted = false;
     private boolean splashScreenPaused = false;
@@ -207,6 +213,11 @@ public class MainActivity extends AppCompatActivity {
         navHeaderSubtitle = headerLayout.findViewById(R.id.subtitle);
 
         navigationMenu = navigationView.getMenu();
+        accountLink = navigationMenu.findItem(R.id.accountLink);
+        editorChangesLink = navigationMenu.findItem(R.id.editorChangesLink);
+        editorDashboardLink = navigationMenu.findItem(R.id.editorDashboardLink);
+        editorLink = navigationMenu.findItem(R.id.editorLink);
+        controlPanelLink = navigationMenu.findItem(R.id.controlPanelLink);
 
         webView = findViewById(R.id.webView);
         webView.setBackgroundColor(Color.TRANSPARENT);
@@ -610,7 +621,7 @@ public class MainActivity extends AppCompatActivity {
         public void setUserData(String data) {
             Log.d("setUserData", data);
 
-            JSONObject user_data;
+            final JSONObject user_data;
             try {
                 user_data = new JSONObject(data);
             } catch (JSONException e) {
@@ -618,22 +629,44 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            boolean loggedIn;
-            try {
-                loggedIn = user_data.getBoolean("logged_in");
-            } catch (JSONException e) {
-                return;
-            }
+            runOnUiThread(new Runnable() {
 
-            if (loggedIn) {
-                navHeaderTitle.setText(user_data.optString("title"));
-                navHeaderTitle.setTypeface(null, Typeface.NORMAL);
-                navHeaderSubtitle.setText(user_data.optString("subtitle"));
-            } else {
-                navHeaderTitle.setText(R.string.not_logged_in);
-                navHeaderTitle.setTypeface(null, Typeface.ITALIC);
-                navHeaderSubtitle.setText("");
-            }
+                @Override
+                public void run() {
+
+                    boolean loggedIn;
+                    try {
+                        loggedIn = user_data.getBoolean("logged_in");
+                    } catch (JSONException e) {
+                        return;
+                    }
+
+                    if (loggedIn) {
+                        navHeaderTitle.setText(user_data.optString("title"));
+                        navHeaderTitle.setTypeface(null, Typeface.NORMAL);
+                        navHeaderSubtitle.setText(user_data.optString("subtitle"));
+                        accountLink.setTitle(R.string.your_account);
+                    } else {
+                        navHeaderTitle.setText(R.string.not_logged_in);
+                        navHeaderTitle.setTypeface(null, Typeface.ITALIC);
+                        navHeaderSubtitle.setText("");
+                        accountLink.setTitle(R.string.login);
+                    }
+
+                    editorLink.setVisible(user_data.optBoolean("allow_editor"));
+                    controlPanelLink.setVisible(user_data.optBoolean("allow_control_panel"));
+
+                    String changesCountDisplay = user_data.optString("changes_count_display");
+                    editorChangesLink.setTitle(changesCountDisplay);
+                    editorDashboardLink.setVisible(loggedIn);
+                    navigationMenu.setGroupVisible(R.id.editorNav, !changesCountDisplay.isEmpty());
+
+                    boolean directEditing = user_data.optBoolean("direct_editing");
+                    editorChangesLink.setIcon(directEditing ? R.drawable.ic_assignment_turned_in : R.drawable.ic_assignment);
+
+                }
+            });
+
         }
     }
 

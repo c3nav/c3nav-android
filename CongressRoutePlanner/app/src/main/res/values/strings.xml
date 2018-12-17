@@ -15,6 +15,7 @@
     <string name="map">Map</string>
     <string name="editor">Editor</string>
     <string name="control_panel">Control Panel</string>
+    <string name="login">Login</string>
     <string name="your_account">Manage account</string>
     <string name="about_c3nav">About c3nav</string>
     <string name="api">API</string>
