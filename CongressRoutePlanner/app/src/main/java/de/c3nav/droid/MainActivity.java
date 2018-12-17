@@ -299,7 +299,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
 
-            @SuppressWarnings("deprication")
+            @SuppressWarnings("deprecation")
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 return (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP && shouldOverrideUrl(Uri.parse(url))) || super.shouldOverrideUrlLoading(view, url);
