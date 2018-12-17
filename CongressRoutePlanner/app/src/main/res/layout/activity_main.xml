@@ -49,7 +49,7 @@
                 android:layout_height="?attr/actionBarSize"
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"
-                app:srcCompat="@drawable/logo_360" />
+                app:srcCompat="@drawable/logo" />
         </LinearLayout>
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
