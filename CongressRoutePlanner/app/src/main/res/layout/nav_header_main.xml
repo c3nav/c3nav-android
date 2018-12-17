@@ -10,25 +10,16 @@
     android:padding="16dp">
 
     <TextView
-        android:id="@+id/navHeaderTitle"
+        android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="@style/TextAppearance.AppCompat.Title"
         tools:text="Margaret Hamilton" />
 
     <TextView
-        android:id="@+id/navHeaderSubtitle"
+        android:id="@+id/subtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
         tools:text="1 unlocked area (moon)" />
-
-    <TextView
-        android:id="@+id/navHeaderSubtitleWarning"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-        android:textColor="@color/colorWarning"
-        android:textStyle="bold"
-        tools:text="direct editing active" />
 </LinearLayout>

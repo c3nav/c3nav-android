@@ -38,6 +38,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
     private WifiManager wifiManager;
     private DrawerLayout mDrawerLayout;
     private NavigationView navigationView;
+    private Menu navigationMenu;
     private Toolbar toolbar;
     private WebView webView;
     private MobileClient mobileClient;
@@ -129,6 +131,48 @@ public class MainActivity extends AppCompatActivity {
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem item) {
+                        Intent browserIntent;
+                        mDrawerLayout.closeDrawers();
+                        switch (item.getItemId()) {
+                            case R.id.accountLink:
+                                webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/account/").build().toString());
+                                return true;
+                            case R.id.editorChangesLink:
+                                webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/editor/changeset/").build().toString());
+                                return true;
+                            case R.id.editorDashboardLink:
+                                webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/editor/user/").build().toString());
+                                return true;
+                            case R.id.mapLink:
+                                webView.loadUrl(BuildConfig.WEB_URL);
+                                return true;
+                            case R.id.editorLink:
+                                webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/editor/").build().toString());
+                                return true;
+                            case R.id.controlPanelLink:
+                                webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/control/").build().toString());
+                                return true;
+                            case R.id.apiLink:
+                                browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/api/").build());
+                                startActivity(browserIntent);
+                                return true;
+                            case R.id.twitterLink:
+                                browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/c3nav/"));
+                                startActivity(browserIntent);
+                                return true;
+                            case R.id.githubLink:
+                                browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/c3nav/"));
+                                startActivity(browserIntent);
+                                return true;
+                            default:
+                                return false;
+                        }
+                    }
+                });
 
         mobileClient = new MobileClient();
 
@@ -159,9 +203,10 @@ public class MainActivity extends AppCompatActivity {
         });
 
         View headerLayout = navigationView.getHeaderView(0);
-        navHeaderTitle = headerLayout.findViewById(R.id.navHeaderTitle);
-        navHeaderSubtitle = headerLayout.findViewById(R.id.navHeaderSubtitle);
-        navHeaderSubtitleWarning = headerLayout.findViewById(R.id.navHeaderSubtitleWarning);
+        navHeaderTitle = headerLayout.findViewById(R.id.title);
+        navHeaderSubtitle = headerLayout.findViewById(R.id.subtitle);
+
+        navigationMenu = navigationView.getMenu();
 
         webView = findViewById(R.id.webView);
         webView.setBackgroundColor(Color.TRANSPARENT);

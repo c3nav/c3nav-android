@@ -1,34 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-    <group >
+    xmlns:tools="http://schemas.android.com/tools">
+    <group android:id="@+id/accountNav">
         <item
-            android:id="@+id/editor_main"
-            android:title="editor" />
-        <item
-            android:id="@+id/editorAccountPage"
-            android:title="editor account" />
+            android:id="@+id/accountLink"
+            android:icon="@drawable/ic_account"
+            android:title="@string/your_account" />
     </group>
-    <group >
+    <group android:id="@+id/editorNav">
         <item
-            android:id="@+id/loginLogout"
-            android:title="logout" />
+            android:id="@+id/editorChangesLink"
+            android:icon="@drawable/ic_assignment"
+            tools:title="No objects changed"
+            tools:ignore="MenuTitle" />
         <item
-            android:id="@+id/accountPage"
-            android:title="accoount" />
-        <item
-            android:id="@+id/controlPanel"
-            android:title="control panel" />
+            android:id="@+id/editorDashboardLink"
+            android:icon="@drawable/ic_dashboard"
+            android:title="Editor Dashboard" />
     </group>
-    <group >
+    <group android:id="@+id/mainNav">
         <item
-            android:id="@+id/api"
-            android:title="api" />
+            android:id="@+id/mapLink"
+            android:icon="@drawable/ic_map"
+            android:title="@string/map" />
         <item
-            android:id="@+id/github"
-            android:title="github" />
+            android:id="@+id/editorLink"
+            android:icon="@drawable/ic_edit"
+            android:title="@string/editor" />
         <item
-            android:id="@+id/about"
-            android:title="about" />
+            android:id="@+id/controlPanelLink"
+            android:icon="@drawable/ic_build"
+            android:title="@string/control_panel" />
+    </group>
+    <group android:id="@+id/aboutNav">
+        <item
+            android:id="@+id/apiLink"
+            android:icon="@drawable/ic_code"
+            android:title="@string/api" />
+        <item
+            android:id="@+id/twitterLink"
+            android:icon="@drawable/ic_link"
+            android:title="Twitter"
+            tools:ignore="HardcodedText" />
+        <item
+            android:id="@+id/githubLink"
+            android:icon="@drawable/ic_link"
+            android:title="GitHub"
+            tools:ignore="HardcodedText" />
+        <item
+            android:id="@+id/aboutLink"
+            android:icon="@drawable/ic_info_outline"
+            android:title="@string/about_c3nav" />
     </group>
 </menu>

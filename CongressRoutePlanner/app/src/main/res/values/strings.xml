@@ -12,4 +12,10 @@
     <string name="url_outside_ok">Continue</string>
     <string name="url_outside_cancel">Cancel</string>
     <string name="not_logged_in">Not logged in</string>
+    <string name="map">Map</string>
+    <string name="editor">Editor</string>
+    <string name="control_panel">Control Panel</string>
+    <string name="your_account">Manage account</string>
+    <string name="about_c3nav">About c3nav</string>
+    <string name="api">API</string>
 </resources>
