@@ -180,6 +180,9 @@ public class MainActivity extends AppCompatActivity {
                                 browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/c3nav/"));
                                 startActivity(browserIntent);
                                 return true;
+                            case R.id.aboutLink:
+                                webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/about/").build().toString());
+                                return true;
                             default:
                                 return false;
                         }
