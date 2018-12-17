@@ -89,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
     private EditText authPassword;
     private TextView authMessage;
     private Button authLoginButton;
-    private boolean hasSplashScreen;
     private boolean logoAnimFinished = false;
     private boolean splashScreenStarted = false;
     private boolean splashScreenPaused = false;
