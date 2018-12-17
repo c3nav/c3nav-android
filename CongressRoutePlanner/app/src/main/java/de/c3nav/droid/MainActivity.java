@@ -27,6 +27,8 @@ import android.support.transition.Transition;
 import android.support.transition.TransitionManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -70,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int PERM_REQUEST = 1;
     private WifiManager wifiManager;
+    private DrawerLayout mDrawerLayout;
     private WebView webView;
     private MobileClient mobileClient;
     private Map<String, Integer> lastLevelValues = new HashMap<>();
@@ -124,6 +127,8 @@ public class MainActivity extends AppCompatActivity {
                 && intentCategories != null && (
                         intentCategories.contains(Intent.CATEGORY_DEFAULT) ||
                         intentCategories.contains(Intent.CATEGORY_BROWSABLE) );
+
+        mDrawerLayout = findViewById(R.id.drawer_layout);
 
         mobileClient = new MobileClient();
 
@@ -560,16 +565,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main, menu);
         return false;
-    }
+    }*/
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case android.R.id.home:
+                mDrawerLayout.openDrawer(GravityCompat.START);
+                return true;
             case R.id.share:
                 Intent i = new Intent(Intent.ACTION_SEND);
                 i.setType("text/plain");
