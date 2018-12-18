@@ -138,6 +138,9 @@ public class MainActivity extends AppCompatActivity {
                         intentCategories.contains(Intent.CATEGORY_BROWSABLE) );
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
+        mDrawerLayout.closeDrawers();
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
@@ -456,6 +459,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     Log.d("c3nav", "splash animation done");
+                    mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
                     splashScreenDone = true;
                     unloadSplashVideo();
                 }
@@ -471,6 +475,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void skipSplash() {
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
         splashScreenDone = true;
         splashScreen.setVisibility(View.GONE);
         unloadSplashVideo();
