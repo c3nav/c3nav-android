@@ -466,7 +466,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             splashScreen.animate()
                     .alpha(0f)
-                    .setDuration(getResources().getInteger(android.R.integer.config_longAnimTime))
+                    .setDuration(getResources().getInteger(android.R.integer.config_mediumAnimTime))
                     .setListener(new AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(Animator animation) {
