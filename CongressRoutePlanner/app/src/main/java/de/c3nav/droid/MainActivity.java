@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean splashScreenPaused = false;
     private boolean splashScreenDone = false;
     private boolean initialPageLoaded = false;
-    private boolean circularWebViewRevealStarted = false;
+    private boolean splashScreenFadeoutStarted = false;
 
     private boolean httpAuthNeeded = false;
     private HttpAuthHandler lastAuthHandler = null;
@@ -416,7 +416,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTransitionEnd(Transition transition) {
                 // remove animated logo because the stuff in the background is still visible
-                circularWebViewReveal();
+                fadeoutSplashScreen();
             }
 
             @Override
@@ -435,9 +435,9 @@ public class MainActivity extends AppCompatActivity {
         logoAnimView.requestLayout();
     }
 
-    protected void circularWebViewReveal() {
-        if (circularWebViewRevealStarted) return;
-        circularWebViewRevealStarted = true;
+    protected void fadeoutSplashScreen() {
+        if (splashScreenFadeoutStarted) return;
+        splashScreenFadeoutStarted = true;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             // center of the clipping circle
             int cx = (int) swipeLayout.getWidth()/2;
