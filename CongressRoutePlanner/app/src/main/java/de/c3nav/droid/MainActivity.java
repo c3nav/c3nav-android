@@ -712,54 +712,56 @@ public class MainActivity extends AppCompatActivity {
 
     class WifiReceiver extends BroadcastReceiver {
         public void onReceive(Context c, Intent intent) {
+
+            int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
+                    Manifest.permission.ACCESS_FINE_LOCATION);
+            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                if (!permAsked) {
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                            PERM_REQUEST);
+                    permAsked = true;
+                }
+                return;
+            }
+            List<ScanResult> wifiList = wifiManager.getScanResults();
+            JSONArray ja = new JSONArray();
+            Map<String, Integer> newLevelValues = new HashMap<String, Integer>();
+            for (ScanResult result : wifiList) {
+                JSONObject jo = new JSONObject();
+                try {
+                    jo.put("bssid", result.BSSID);
+                    jo.put("ssid", result.SSID);
+                    jo.put("level", result.level);
+                    jo.put("frequency", result.frequency);
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                        if (SystemClock.elapsedRealtime() - result.timestamp / 1000 > 1000) {
+                            continue;
+                        }
+                        jo.put("last", SystemClock.elapsedRealtime() - result.timestamp / 1000);
+                    } else {
+                        // Workaround for older devices: If the signal level did not change
+                        // at all since the last scan, we will assume that it is a cached
+                        // value and should not be used.
+                        newLevelValues.put(result.BSSID, result.level);
+                        if (lastLevelValues.containsKey(result.BSSID) && lastLevelValues.get(result.BSSID) == result.level) {
+                            Log.d("scan result", "Discard " + result.BSSID + " because level did not change");
+                            continue;
+                        }
+                    }
+                    ja.put(jo);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            Log.d("scan result", ja.toString());
+            mobileClient.setNearbyStations(ja);
+            lastLevelValues = newLevelValues;
+
             webView.post(new Runnable() {
                 @Override
                 public void run() {
-                    int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
-                            Manifest.permission.ACCESS_FINE_LOCATION);
-                    if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-                        if (!permAsked) {
-                            ActivityCompat.requestPermissions(MainActivity.this,
-                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                    PERM_REQUEST);
-                            permAsked = true;
-                        }
-                        return;
-                    }
-                    List<ScanResult> wifiList = wifiManager.getScanResults();
-                    JSONArray ja = new JSONArray();
-                    Map<String, Integer> newLevelValues = new HashMap<String, Integer>();
-                    for (ScanResult result : wifiList) {
-                        JSONObject jo = new JSONObject();
-                        try {
-                            jo.put("bssid", result.BSSID);
-                            jo.put("ssid", result.SSID);
-                            jo.put("level", result.level);
-                            jo.put("frequency", result.frequency);
-
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                                if (SystemClock.elapsedRealtime() - result.timestamp / 1000 > 1000) {
-                                    continue;
-                                }
-                                jo.put("last", SystemClock.elapsedRealtime() - result.timestamp / 1000);
-                            } else {
-                                // Workaround for older devices: If the signal level did not change
-                                // at all since the last scan, we will assume that it is a cached
-                                // value and should not be used.
-                                newLevelValues.put(result.BSSID, result.level);
-                                if (lastLevelValues.containsKey(result.BSSID) && lastLevelValues.get(result.BSSID) == result.level) {
-                                    Log.d("scan result", "Discard " + result.BSSID + " because level did not change");
-                                    continue;
-                                }
-                            }
-                            ja.put(jo);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    Log.d("scan result", ja.toString());
-                    mobileClient.setNearbyStations(ja);
-                    lastLevelValues = newLevelValues;
                     webView.loadUrl("javascript:nearby_stations_available();");
                 }
             });
