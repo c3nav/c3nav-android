@@ -584,7 +584,7 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
-    protected boolean hasLocationPermission(boolean requestPermission) {
+    protected boolean checkLocationPermission(boolean requestPermission) {
         int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.ACCESS_FINE_LOCATION);
         if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
@@ -599,8 +599,12 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    protected boolean checkLocationPermission() {
+        return checkLocationPermission(!locationPermissionRequested && splashScreenDone);
+    }
+
     protected boolean hasLocationPermission() {
-        return hasLocationPermission(!locationPermissionRequested && splashScreenDone);
+        return checkLocationPermission(false);
     }
 
     class MobileClient {
@@ -739,7 +743,7 @@ public class MainActivity extends AppCompatActivity {
     class WifiReceiver extends BroadcastReceiver {
         public void onReceive(Context c, Intent intent) {
 
-            if (!hasLocationPermission()) return;
+            if (!checkLocationPermission()) return;
 
             List<ScanResult> wifiList = wifiManager.getScanResults();
             JSONArray ja = new JSONArray();
