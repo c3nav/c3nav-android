@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private MobileClient mobileClient;
     private Map<String, Integer> lastLevelValues = new HashMap<>();
-    private boolean permAsked = false;
+    private boolean locationPermissionRequested = false;
     private WifiReceiver wifiReceiver;
     protected CustomSwipeToRefresh swipeLayout;
 
@@ -584,6 +584,25 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    protected boolean hasLocationPermission(boolean requestPermission) {
+        int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            if (requestPermission) {
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        PERM_REQUEST);
+                locationPermissionRequested = true;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    protected boolean hasLocationPermission() {
+        return hasLocationPermission(!locationPermissionRequested && splashScreenDone);
+    }
+
     class MobileClient {
         private JSONArray nearbyStations;
 
@@ -720,17 +739,8 @@ public class MainActivity extends AppCompatActivity {
     class WifiReceiver extends BroadcastReceiver {
         public void onReceive(Context c, Intent intent) {
 
-            int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
-                    Manifest.permission.ACCESS_FINE_LOCATION);
-            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-                if (!permAsked) {
-                    ActivityCompat.requestPermissions(MainActivity.this,
-                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                            PERM_REQUEST);
-                    permAsked = true;
-                }
-                return;
-            }
+            if (!hasLocationPermission()) return;
+
             List<ScanResult> wifiList = wifiManager.getScanResults();
             JSONArray ja = new JSONArray();
             Map<String, Integer> newLevelValues = new HashMap<String, Integer>();
