@@ -138,8 +138,6 @@ public class MainActivity extends AppCompatActivity {
                         intentCategories.contains(Intent.CATEGORY_BROWSABLE) );
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
-        mDrawerLayout.closeDrawers();
-        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
 
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(
@@ -237,6 +235,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         if (activityStartedFromLauncher) {
+            mDrawerLayout.closeDrawers();
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             showSplash();
         } else {
             skipSplash();
