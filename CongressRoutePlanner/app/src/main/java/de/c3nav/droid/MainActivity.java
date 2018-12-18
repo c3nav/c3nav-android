@@ -584,6 +584,14 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    protected boolean isLocationPermissionRequested() {
+        return locationPermissionRequested;
+    }
+
+    private void setLocationPermissionRequested(boolean locationPermissionRequested) {
+        this.locationPermissionRequested = locationPermissionRequested;
+    }
+
     protected boolean checkLocationPermission(boolean requestPermission) {
         int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.ACCESS_FINE_LOCATION);
@@ -592,7 +600,7 @@ public class MainActivity extends AppCompatActivity {
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         PERM_REQUEST);
-                locationPermissionRequested = true;
+                this.setLocationPermissionRequested(true);
             }
             return false;
         }
@@ -600,7 +608,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected boolean checkLocationPermission() {
-        return checkLocationPermission(!locationPermissionRequested && splashScreenDone);
+        return checkLocationPermission(!this.isLocationPermissionRequested() && splashScreenDone);
     }
 
     protected boolean hasLocationPermission() {
