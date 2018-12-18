@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
@@ -19,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.transition.AutoTransition;
@@ -77,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private MobileClient mobileClient;
     private Map<String, Integer> lastLevelValues = new HashMap<>();
-    private boolean locationPermissionRequested = false;
+    private boolean locationPermissionRequested;
     private WifiReceiver wifiReceiver;
     protected CustomSwipeToRefresh swipeLayout;
 
@@ -113,6 +115,8 @@ public class MainActivity extends AppCompatActivity {
     private boolean logoScreenIsVisible = false;
     private boolean loginScreenIsActive = false;
 
+    private SharedPreferences sharePrefs;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppTheme);
@@ -135,6 +139,9 @@ public class MainActivity extends AppCompatActivity {
                 && intentCategories != null && (
                         intentCategories.contains(Intent.CATEGORY_DEFAULT) ||
                         intentCategories.contains(Intent.CATEGORY_BROWSABLE) );
+
+        sharePrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        locationPermissionRequested = sharePrefs.getBoolean(getString(R.string.location_permission_requested_key), false);
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
@@ -590,6 +597,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void setLocationPermissionRequested(boolean locationPermissionRequested) {
         this.locationPermissionRequested = locationPermissionRequested;
+        SharedPreferences.Editor editor = sharePrefs.edit();
+        editor.putBoolean(getString(R.string.location_permission_requested_key), locationPermissionRequested);
+        editor.commit();
     }
 
     protected boolean checkLocationPermission(boolean requestPermission) {
