@@ -417,7 +417,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTransitionEnd(Transition transition) {
                 // remove animated logo because the stuff in the background is still visible
-                splashScreen.setVisibility(View.GONE);
                 circularWebViewReveal();
             }
 
@@ -463,9 +462,19 @@ public class MainActivity extends AppCompatActivity {
                     unloadSplashVideo();
                 }
             });
+            splashScreen.setVisibility(View.GONE);
             anim.start();
         } else {
-            // no animation, maybe insert some alternate animation?
+            splashScreen.animate()
+                    .alpha(0f)
+                    .setDuration(getResources().getInteger(android.R.integer.config_longAnimTime))
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            splashScreen.setVisibility(View.GONE);
+                            splashScreen.setAlpha(1f);
+                        }
+                    });
         }
     }
 
