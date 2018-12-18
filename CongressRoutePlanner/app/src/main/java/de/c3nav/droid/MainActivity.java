@@ -634,6 +634,21 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @JavascriptInterface
+        public boolean hasLocationPermission() {
+            return MainActivity.this.hasLocationPermission();
+        }
+
+        @JavascriptInterface
+        public boolean checkLocationPermission(boolean requestPermission) {
+            return MainActivity.this.checkLocationPermission(requestPermission);
+        }
+
+        @JavascriptInterface
+        public boolean checkLocationPermission() {
+            return MainActivity.this.checkLocationPermission();
+        }
+
+        @JavascriptInterface
         public void shareUrl(String url) {
             Intent i = new Intent(Intent.ACTION_SEND);
             i.setType("text/plain");
