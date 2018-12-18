@@ -230,7 +230,6 @@ public class MainActivity extends AppCompatActivity {
         controlPanelLink = navigationMenu.findItem(R.id.controlPanelLink);
 
         webView = findViewById(R.id.webView);
-        webView.setBackgroundColor(Color.TRANSPARENT);
         swipeLayout = findViewById(R.id.swipe_container);
 
 
