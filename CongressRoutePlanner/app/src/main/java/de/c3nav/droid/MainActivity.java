@@ -816,7 +816,11 @@ public class MainActivity extends AppCompatActivity {
             webView.post(new Runnable() {
                 @Override
                 public void run() {
-                    webView.loadUrl("javascript:nearby_stations_available();");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        webView.evaluateJavascript("nearby_stations_available();", null);
+                    } else {
+                        webView.loadUrl("javascript:nearby_stations_available();");
+                    }
                 }
             });
         }
