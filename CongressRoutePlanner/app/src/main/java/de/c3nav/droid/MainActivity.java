@@ -155,11 +155,7 @@ public class MainActivity extends AppCompatActivity {
                         mDrawerLayout.closeDrawers();
                         switch (item.getItemId()) {
                             case R.id.accountLink:
-                                if (loggedIn) {
-                                    webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/account/").build().toString());
-                                } else {
-                                    webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/login").appendQueryParameter("next", Uri.parse(webView.getUrl()).getPath()).build().toString());
-                                }
+                                MainActivity.this.evaluateJavascript("openInModal('/account/');");
                                 return true;
                             case R.id.editorChangesLink:
                                 webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/editor/changeset/").build().toString());
