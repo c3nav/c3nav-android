@@ -48,6 +48,7 @@ import android.view.WindowManager;
 import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
 import android.webkit.JsResult;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
@@ -745,6 +746,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void evaluateJavascript(String script, ValueCallback<String> resultCallback) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            webView.evaluateJavascript(script, resultCallback);
+        } else {
+            webView.loadUrl("javascript:"+script);
+        }
+    }
+
+    private void evaluateJavascript(String script) {
+        evaluateJavascript(script, null);
+    }
+
     /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -816,11 +829,7 @@ public class MainActivity extends AppCompatActivity {
             webView.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                        webView.evaluateJavascript("nearby_stations_available();", null);
-                    } else {
-                        webView.loadUrl("javascript:nearby_stations_available();");
-                    }
+                    MainActivity.this.evaluateJavascript("nearby_stations_available();");
                 }
             });
         }
