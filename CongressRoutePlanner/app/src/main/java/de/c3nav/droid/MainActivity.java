@@ -19,6 +19,7 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
@@ -73,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int PERM_REQUEST = 1;
     private WifiManager wifiManager;
+    private PowerManager powerManager;
     private DrawerLayout mDrawerLayout;
     private NavigationView navigationView;
     private Menu navigationMenu;
@@ -373,6 +375,8 @@ public class MainActivity extends AppCompatActivity {
 
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiReceiver = new WifiReceiver();
+
+        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
     }
 
     protected void showSplash() {
@@ -630,6 +634,16 @@ public class MainActivity extends AppCompatActivity {
         return checkLocationPermission(false);
     }
 
+    protected void startScan() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            if (!powerManager.isScreenOn()) return;
+        } else {
+            if (!powerManager.isInteractive()) return;
+        }
+        Log.d("c3navWifiScanner", "startScan triggered");
+        wifiManager.startScan();
+    }
+
     class MobileClient {
         private JSONArray nearbyStations;
 
@@ -653,7 +667,7 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void scanNow() {
-            wifiManager.startScan();
+            startScan();
         }
 
         @JavascriptInterface
