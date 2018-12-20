@@ -584,8 +584,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPostResume() {
-        super.onPostResume();
+    protected void onResume() {
+        super.onResume();
+        Log.d("lifecycleEvents", "onPostResume called");
         if(checkLocationPermission(false, true)) startScan();
         registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         if (splashScreenPaused && !splashScreenDone) {
@@ -595,6 +596,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
+        Log.d("lifecycleEvents", "onPause called");
         unregisterReceiver(wifiReceiver);
         if (splashScreenStarted && !splashScreenDone) {
             splashScreenPaused = true;
