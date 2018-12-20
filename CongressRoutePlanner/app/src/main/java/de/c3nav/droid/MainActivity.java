@@ -118,11 +118,15 @@ public class MainActivity extends AppCompatActivity {
 
     private SharedPreferences sharePrefs;
 
+    protected Uri instanceBaseUrl;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        instanceBaseUrl = Uri.parse(BuildConfig.WEB_URL);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -157,30 +161,30 @@ public class MainActivity extends AppCompatActivity {
                             case R.id.accountLink:
                                 Uri uri;
                                 if(loggedIn) {
-                                    uri=Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/account/").build();
+                                    uri=MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/account/").build();
                                 } else {
-                                    uri=Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/login")
+                                    uri=MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/login")
                                             .appendQueryParameter("next", Uri.parse(webView.getUrl()).getPath()).build();
                                 }
                                 MainActivity.this.evaluateJavascript("window.openInModal ? openInModal('" + uri.toString() + "') : window.location='" + uri.toString() + "';");
                                 return true;
                             case R.id.editorChangesLink:
-                                webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/editor/changeset/").build().toString());
+                                webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/editor/changeset/").build().toString());
                                 return true;
                             case R.id.editorDashboardLink:
-                                webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/editor/user/").build().toString());
+                                webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/editor/user/").build().toString());
                                 return true;
                             case R.id.mapLink:
                                 webView.loadUrl(BuildConfig.WEB_URL);
                                 return true;
                             case R.id.editorLink:
-                                webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/editor/").build().toString());
+                                webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/editor/").build().toString());
                                 return true;
                             case R.id.controlPanelLink:
-                                webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/control/").build().toString());
+                                webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/control/").build().toString());
                                 return true;
                             case R.id.apiLink:
-                                browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/api/").build());
+                                browserIntent = new Intent(Intent.ACTION_VIEW, MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/api/").build());
                                 startActivity(browserIntent);
                                 return true;
                             case R.id.twitterLink:
@@ -192,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
                                 startActivity(browserIntent);
                                 return true;
                             case R.id.aboutLink:
-                                webView.loadUrl(Uri.parse(BuildConfig.WEB_URL).buildUpon().encodedPath("/about/").build().toString());
+                                webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/about/").build().toString());
                                 return true;
                             default:
                                 return false;
@@ -286,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             private boolean shouldOverrideUrl(final Uri uri) {
-                if (Uri.parse(BuildConfig.WEB_URL).getHost().equals(uri.getHost())) {
+                if (MainActivity.this.instanceBaseUrl.getHost().equals(uri.getHost())) {
                     List<String> pathSegments = uri.getPathSegments();
                     if (pathSegments.isEmpty() || !pathSegments.get(0).equals("api")) {
                         return false;
