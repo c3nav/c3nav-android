@@ -356,7 +356,17 @@ public class MainActivity extends AppCompatActivity {
         if (data != null) {
             Uri.Builder tmp_uri = data.buildUpon();
             tmp_uri.scheme("https");
+            List<String> pathSegments = data.getPathSegments();
+            if (!pathSegments.isEmpty() && pathSegments.get(0).equals("embed")) {
+                tmp_uri.path("");
+                for (String pathSegment : pathSegments) {
+                    if (pathSegment.equals("embed")) continue;
+                    tmp_uri.appendPath(pathSegment);
+                }
+                Log.d("c3navIntendUriBuilder", "converted embed URL to normal URL, orignal URL: " + data.toString());
+            }
             url_to_call = tmp_uri.build().toString();
+            Log.d("c3navIntendUriBuilder", "final url: " + url_to_call);
         }
 
         webView.loadUrl(url_to_call);
