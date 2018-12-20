@@ -620,7 +620,7 @@ public class MainActivity extends AppCompatActivity {
             locationPermissionCache = new Boolean(permissionCheck == PackageManager.PERMISSION_GRANTED);
         }
 
-        if (locationPermissionCache.booleanValue()) {
+        if (!locationPermissionCache.booleanValue()) {
             if (requestPermission) {
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
