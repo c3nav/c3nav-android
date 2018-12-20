@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private MobileClient mobileClient;
     private Map<String, Integer> lastLevelValues = new HashMap<>();
     private boolean locationPermissionRequested;
+    private Boolean locationPermissionCache = null;
     private WifiReceiver wifiReceiver;
     protected CustomSwipeToRefresh swipeLayout;
 
@@ -373,6 +374,7 @@ public class MainActivity extends AppCompatActivity {
 
         webView.loadUrl(url_to_call);
 
+        hasLocationPermission(); //initialize locationPermissionCache
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiReceiver = new WifiReceiver();
 
@@ -584,7 +586,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPostResume() {
         super.onPostResume();
-        wifiManager.startScan();
+        if(checkLocationPermission(false, true)) startScan();
         registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         if (splashScreenPaused && !splashScreenDone) {
             skipSplash();
@@ -611,10 +613,14 @@ public class MainActivity extends AppCompatActivity {
         editor.commit();
     }
 
-    protected boolean checkLocationPermission(boolean requestPermission) {
-        int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+    protected boolean checkLocationPermission(boolean requestPermission, boolean ingoreCache) {
+        if (ingoreCache || locationPermissionCache == null) {
+            int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
+                    Manifest.permission.ACCESS_FINE_LOCATION);
+            locationPermissionCache = new Boolean(permissionCheck == PackageManager.PERMISSION_GRANTED);
+        }
+
+        if (locationPermissionCache.booleanValue()) {
             if (requestPermission) {
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
@@ -624,6 +630,10 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
         return true;
+    }
+
+    protected boolean checkLocationPermission(boolean requestPermission) {
+        return checkLocationPermission(requestPermission, false);
     }
 
     protected boolean checkLocationPermission() {
@@ -640,6 +650,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             if (!powerManager.isInteractive()) return;
         }
+        if (!hasLocationPermission()) return;
         Log.d("c3navWifiScanner", "startScan triggered");
         wifiManager.startScan();
     }
