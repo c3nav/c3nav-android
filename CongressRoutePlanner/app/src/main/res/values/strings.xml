@@ -8,7 +8,7 @@
     <string name="auth_pw">Password</string>
     <string name="auth_title">Please be patient, c3nav is not yet available for the general public.</string>
     <string name="auth_login">Login</string>
-    <string name="url_outside_message">Warning, this link leads to a page outside of c3nav:</string>
+    <string name="url_outside_message">Warning, this link leads to a page outside of c3nav: %1$s</string>
     <string name="url_outside_ok">Continue</string>
     <string name="url_outside_cancel">Cancel</string>
     <string name="not_logged_in">Not logged in</string>

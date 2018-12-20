@@ -285,25 +285,11 @@ public class MainActivity extends AppCompatActivity {
                         return false;
                     }
                 }
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
-                alertDialogBuilder.setMessage(getString(R.string.url_outside_message) + " " + uri.toString());
-                alertDialogBuilder.setCancelable(false);
-                alertDialogBuilder.setIcon(android.R.drawable.ic_dialog_alert);
-                alertDialogBuilder.setPositiveButton(R.string.url_outside_ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                        startActivity(intent);
-                    }
-                });
-                alertDialogBuilder.setNegativeButton(R.string.url_outside_cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.cancel();
-                    }
-                });
-                alertDialogBuilder.show();
+                ExternalUrlDialog dialog = new ExternalUrlDialog();
+                Bundle args = new Bundle();
+                args.putString(ExternalUrlDialog.ARG_URL, uri.toString());
+                dialog.setArguments(args);
+                dialog.show(getSupportFragmentManager(), "externalUrl");
                 return true;
             }
 
