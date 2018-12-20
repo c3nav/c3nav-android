@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
     private Button authLoginButton;
 
     private boolean loggedIn = false;
+    private boolean hasChangeSet = false;
 
     private TextView navHeaderTitle;
     private TextView navHeaderSubtitle;
@@ -724,6 +725,9 @@ public class MainActivity extends AppCompatActivity {
 
                     editorLink.setVisible(user_data.optBoolean("allow_editor"));
                     controlPanelLink.setVisible(user_data.optBoolean("allow_control_panel"));
+
+                    hasChangeSet = user_data.optBoolean("has_changeset");
+                    editorChangesLink.setEnabled(hasChangeSet);
 
                     String changesCountDisplay = user_data.optString("changes_count_display");
                     editorChangesLink.setTitle(changesCountDisplay);
