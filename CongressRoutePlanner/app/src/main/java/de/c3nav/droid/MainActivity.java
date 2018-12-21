@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity
     private boolean loginScreenIsActive = false;
 
     private SharedPreferences sharePrefs;
-    private boolean settingkeepOnTop = true;
+    private boolean settingKeepOnTop = true;
     private boolean settingUseWifiLocating = true;
 
     protected Uri instanceBaseUrl;
@@ -394,7 +394,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     protected void updatedSettings() {
-        settingkeepOnTop = sharePrefs.getBoolean(getString(R.string.keep_on_top_key), true);
+        settingKeepOnTop = sharePrefs.getBoolean(getString(R.string.keep_on_top_key), true);
+        //settingStayAwake = sharePrefs.getBoolean(getString(R.string.stay_awake_key), false);
         settingUseWifiLocating = sharePrefs.getBoolean(getString(R.string.use_wifi_locating_key), true);
 
         setWindowFlags();
@@ -951,7 +952,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setWindowFlags() {
-        if (settingkeepOnTop && !isInEditor()) {
+        if (settingKeepOnTop && !isInEditor()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         } else {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
