@@ -26,4 +26,8 @@
     <string name="keep_on_top_summary">c3nav im Vordergrund behalten und über dem Lockscreen anzeigen.</string>
     <string name="use_wifi_locating">WLAN-basierte Ortung</string>
     <string name="use_wifi_locating_summary">Nutze WLAN-basierte Ortung um deine aktuelle Postion zu bestimmen.</string>
+    <string name="developer_mode_enabled">Entwickler Modus</string>
+    <string name="developer_instance_url">Instanz URL Überschreiben</string>
+    <string name="developer_http_user">HTTP Benutzername</string>
+    <string name="developer_http_password">HTTP Passwort</string>
 </resources>

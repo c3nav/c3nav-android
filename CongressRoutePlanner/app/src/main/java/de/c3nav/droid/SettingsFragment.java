@@ -3,12 +3,16 @@ package de.c3nav.droid;
 import android.Manifest;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v14.preference.SwitchPreference;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.preference.CheckBoxPreference;
+import android.support.v7.preference.EditTextPreference;
 import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceCategory;
 import android.support.v7.preference.PreferenceFragmentCompat;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
@@ -16,6 +20,12 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private SharedPreferences sharePrefs;
 
     public CheckBoxPreference useWifiLocating;
+    private PreferenceCategory developerSettings;
+    private SwitchPreference developerModeEnabled;
+    private EditTextPreference developerInstanceUrl;
+    private EditTextPreference developerHttpUser;
+    private EditTextPreference developerHttpPassword;
+
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -47,6 +57,19 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 return false;
             }
         });
+
+        developerSettings = (PreferenceCategory)findPreference(getString(R.string.developer_settings_key));
+        developerModeEnabled = (SwitchPreference)findPreference(getString(R.string.developer_mode_enabled_key));
+        developerInstanceUrl = (EditTextPreference)findPreference(getString(R.string.developer_instance_url_key));
+        developerHttpUser = (EditTextPreference)findPreference(getString(R.string.developer_http_user_key));
+        developerHttpPassword = (EditTextPreference)findPreference(getString(R.string.developer_http_password_key));
+
+        developerSettings.setVisible(BuildConfig.DEBUG);
+        developerModeEnabled.setVisible(BuildConfig.DEBUG);
+        developerInstanceUrl.setVisible(BuildConfig.DEBUG);
+        developerHttpUser.setVisible(BuildConfig.DEBUG);
+        developerHttpPassword.setVisible(BuildConfig.DEBUG);
+    }
 
     private boolean checkLocationPermisson() {
         int permissionCheck = ContextCompat.checkSelfPermission(getContext(),

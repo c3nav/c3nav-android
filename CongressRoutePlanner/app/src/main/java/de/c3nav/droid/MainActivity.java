@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
+import android.net.ParseException;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
@@ -129,6 +130,10 @@ public class MainActivity extends AppCompatActivity
     private SharedPreferences sharedPrefs;
     private boolean settingKeepOnTop = true;
     private boolean settingUseWifiLocating = true;
+    private boolean settingDeveloperModeEnabled = false;
+    private String settingDeveloperInstanceUrl = "";
+    private String settingDeveloperHttpUser = null;
+    private String settingDeveloperHttpPassword = null;
 
     protected Uri instanceBaseUrl;
 
@@ -159,6 +164,18 @@ public class MainActivity extends AppCompatActivity
 
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         locationPermissionRequested = sharedPrefs.getBoolean(getString(R.string.location_permission_requested_key), false);
+        if (BuildConfig.DEBUG) {
+            settingDeveloperInstanceUrl = sharedPrefs.getString(getString(R.string.developer_instance_url_key), "");
+
+            if (!settingDeveloperInstanceUrl.isEmpty()) {
+                try {
+                    Uri devInstanceUri = Uri.parse(settingDeveloperInstanceUrl);
+                    instanceBaseUrl = devInstanceUri;
+                } catch (ParseException e) {
+                    Log.d("developerSettings", "failed to parse developerInstanceUrl \"" + settingDeveloperInstanceUrl + "\", ignoring");
+                }
+            }
+        }
         updatedSettings();
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
@@ -334,9 +351,15 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onReceivedHttpAuthRequest(WebView view, final HttpAuthHandler handler, String host, String realm) {
-                httpAuthNeeded = true;
-                lastAuthHandler = handler;
-                maybeShowLoginScreen();
+                if (BuildConfig.DEBUG && settingDeveloperModeEnabled
+                        && settingDeveloperHttpUser != null && !settingDeveloperHttpUser.isEmpty()
+                        && settingDeveloperHttpPassword != null && !settingDeveloperHttpPassword.isEmpty()) {
+                    handler.proceed(settingDeveloperHttpUser, settingDeveloperHttpPassword);
+                } else {
+                    httpAuthNeeded = true;
+                    lastAuthHandler = handler;
+                    maybeShowLoginScreen();
+                }
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
@@ -366,7 +389,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        String url_to_call = BuildConfig.WEB_URL;
+        String url_to_call = instanceBaseUrl.toString();
         Uri data = intent.getData();
         if (data != null) {
             Uri.Builder tmp_uri = data.buildUpon();
@@ -399,6 +422,23 @@ public class MainActivity extends AppCompatActivity
         settingUseWifiLocating = sharedPrefs.getBoolean(getString(R.string.use_wifi_locating_key), true);
 
         setWindowFlags();
+
+        if (BuildConfig.DEBUG) {
+            settingDeveloperModeEnabled = sharedPrefs.getBoolean(getString(R.string.developer_mode_enabled_key), false);
+            String newSettingDeveloperInstanceUrl = "";
+            if (settingDeveloperModeEnabled) {
+                newSettingDeveloperInstanceUrl = sharedPrefs.getString(getString(R.string.developer_instance_url_key), "");
+                settingDeveloperHttpUser = sharedPrefs.getString(getString(R.string.developer_http_user_key), "");
+                settingDeveloperHttpPassword = sharedPrefs.getString(getString(R.string.developer_http_password_key), "");
+            } else {
+                settingDeveloperHttpUser = null;
+                settingDeveloperHttpPassword = null;
+            }
+
+            if (!settingDeveloperInstanceUrl.equals(newSettingDeveloperInstanceUrl)) {
+                recreate();
+            }
+        }
     }
 
     protected void showSplash() {

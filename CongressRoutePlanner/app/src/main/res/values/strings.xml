@@ -25,4 +25,8 @@
     <string name="keep_on_top_summary">Keep c3nav on top and show it on top of your lock screen.</string>
     <string name="use_wifi_locating">Wifi-based location</string>
     <string name="use_wifi_locating_summary">Use Wifi-based location to get you current position.</string>
+    <string name="developer_mode_enabled">Developer Mode</string>
+    <string name="developer_instance_url">Instance URL Override</string>
+    <string name="developer_http_user">HTTP Username</string>
+    <string name="developer_http_password">HTTP Password</string>
 </resources>

@@ -17,4 +17,30 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory
+        android:key="@string/developer_settings_key"
+        android:title="Developer Settings">
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="@string/developer_mode_enabled_key"
+            android:title="@string/developer_mode_enabled" />
+        <EditTextPreference
+            android:dependency="@string/developer_mode_enabled_key"
+            android:key="@string/developer_instance_url_key"
+            android:singleLine="true"
+            android:title="@string/developer_instance_url" />
+        <EditTextPreference
+            android:dependency="@string/developer_mode_enabled_key"
+            android:key="@string/developer_http_user_key"
+            android:singleLine="true"
+            android:title="@string/developer_http_user" />
+        <EditTextPreference
+            android:dependency="@string/developer_mode_enabled_key"
+            android:key="@string/developer_http_password_key"
+            android:singleLine="true"
+            android:title="@string/developer_http_password" />
+
+    </PreferenceCategory>
+
 </PreferenceScreen>

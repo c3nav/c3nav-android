@@ -3,4 +3,9 @@
     <string name="location_permission_requested_key">locationPermissionRequested</string>
     <string name="keep_on_top_key">keepOnTop</string>
     <string name="use_wifi_locating_key">useWifiLocating</string>
+    <string name="developer_settings_key">developerSettings</string>
+    <string name="developer_mode_enabled_key">developerModeEnabled</string>
+    <string name="developer_instance_url_key">developerInstanceUrl</string>
+    <string name="developer_http_user_key">developerHttpUser</string>
+    <string name="developer_http_password_key">developerHttpPassword</string>
 </resources>
