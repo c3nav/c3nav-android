@@ -48,6 +48,7 @@
                     android:scheme="https" />
             </intent-filter>
         </activity>
+        <activity android:name=".SettingsActivity"></activity>
     </application>
 
 </manifest>

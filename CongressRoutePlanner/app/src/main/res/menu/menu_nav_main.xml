@@ -35,6 +35,10 @@
             android:icon="@drawable/ic_build"
             android:title="@string/control_panel"
             android:visible="false" />
+        <item
+            android:id="@+id/settingsButton"
+            android:icon="@drawable/ic_settings"
+            android:title="@string/settings" />
     </group>
     <group android:id="@+id/aboutNav">
         <item

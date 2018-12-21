@@ -76,6 +76,8 @@ public class MainActivity extends AppCompatActivity
 
     //Request Codes
     public static final int PERM_REQUEST = 1;
+    public final static int SETTINGS_REQUEST = 2;
+
     private WifiManager wifiManager;
     private PowerManager powerManager;
     private DrawerLayout mDrawerLayout;
@@ -124,6 +126,8 @@ public class MainActivity extends AppCompatActivity
     private boolean loginScreenIsActive = false;
 
     private SharedPreferences sharePrefs;
+    private boolean settingkeepOnTop = true;
+    private boolean settingUseWifiLocating = true;
 
     protected Uri instanceBaseUrl;
 
@@ -154,6 +158,7 @@ public class MainActivity extends AppCompatActivity
 
         sharePrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         locationPermissionRequested = sharePrefs.getBoolean(getString(R.string.location_permission_requested_key), false);
+        updatedSettings();
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
@@ -205,6 +210,9 @@ public class MainActivity extends AppCompatActivity
                             case R.id.aboutLink:
                                 webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/about/").build().toString());
                                 return true;
+                            case R.id.settingsButton:
+                                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
+                                startActivityForResult(settingsIntent, SETTINGS_REQUEST);
                             default:
                                 return false;
                         }
@@ -382,6 +390,13 @@ public class MainActivity extends AppCompatActivity
         wifiReceiver = new WifiReceiver();
 
         powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+    }
+
+    protected void updatedSettings() {
+        settingkeepOnTop = sharePrefs.getBoolean(getString(R.string.keep_on_top_key), true);
+        settingUseWifiLocating = sharePrefs.getBoolean(getString(R.string.use_wifi_locating_key), true);
+
+        setWindowFlags();
     }
 
     protected void showSplash() {
@@ -608,6 +623,19 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d("lifecycleEvents", "onActivityResult called");
+
+        switch (requestCode) {
+            case SETTINGS_REQUEST:
+                Log.d("onActivityResult", "settings activity finished with result code " + resultCode);
+                updatedSettings();
+                break;
+        }
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case PERM_REQUEST:
@@ -632,6 +660,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     protected boolean checkLocationPermission(boolean requestPermission, boolean ignoreCache) {
+        if (!settingUseWifiLocating) return false;
         if (ignoreCache || locationPermissionCache == null) {
             int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
                     Manifest.permission.ACCESS_FINE_LOCATION);
@@ -663,6 +692,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     protected void startScan() {
+        if (!settingUseWifiLocating) return;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             if (!powerManager.isScreenOn()) return;
         } else {
@@ -896,6 +926,15 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onAttachedToWindow() {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        setWindowFlags();
     }
+
+    private void setWindowFlags() {
+        if (settingkeepOnTop) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        } else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        }
+    }
+
 }

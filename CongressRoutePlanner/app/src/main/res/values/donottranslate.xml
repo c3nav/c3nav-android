@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="location_permission_requested_key">locationPermissionRequested</string>
+    <string name="keep_on_top_key">keepOnTop</string>
+    <string name="use_wifi_locating_key">useWifiLocating</string>
 </resources>

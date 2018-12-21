@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/general_settings">
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/keep_on_top_key"
+            android:summary="@string/keep_on_top_summary"
+            android:title="@string/keep_on_top" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/use_wifi_locating_key"
+            android:title="@string/use_wifi_locating" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
