@@ -48,6 +48,7 @@ import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.webkit.CookieManager;
 import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
 import android.webkit.JsResult;
@@ -69,6 +70,7 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -407,6 +409,7 @@ public class MainActivity extends AppCompatActivity
             Log.d("c3navIntendUriBuilder", "final url: " + url_to_call);
         }
 
+        CookieManager.getInstance().setCookie(instanceBaseUrl.toString(), "lang=" + Locale.getDefault().getLanguage());
         webView.loadUrl(url_to_call);
 
         hasLocationPermission(); //initialize locationPermissionCache
