@@ -613,6 +613,9 @@ public class MainActivity extends AppCompatActivity
             case PERM_REQUEST:
                 if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     locationPermissionCache = Boolean.TRUE;
+                    // let the js know we have location permission now and start a single scan
+                    evaluateJavascript("nearby_stations_available();");
+                    startScan();
                 }
         }
     }
