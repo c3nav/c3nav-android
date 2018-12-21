@@ -641,6 +641,12 @@ public class MainActivity extends AppCompatActivity
             case PERM_REQUEST:
                 if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     locationPermissionCache = Boolean.TRUE;
+                    if (!settingUseWifiLocating) {
+                        SharedPreferences.Editor editor = sharePrefs.edit();
+                        editor.putBoolean(getString(R.string.use_wifi_locating_key), true);
+                        editor.commit();
+                        settingUseWifiLocating = true;
+                    }
                     // let the js know we have location permission now and start a single scan
                     evaluateJavascript("nearby_stations_available();");
                     startScan();
@@ -660,7 +666,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     protected boolean checkLocationPermission(boolean requestPermission, boolean ignoreCache) {
-        if (!settingUseWifiLocating) return false;
+        if (!settingUseWifiLocating && !requestPermission) return false;
         if (ignoreCache || locationPermissionCache == null) {
             int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
                     Manifest.permission.ACCESS_FINE_LOCATION);
@@ -676,7 +682,7 @@ public class MainActivity extends AppCompatActivity
             }
             return false;
         }
-        return true;
+        return settingUseWifiLocating;
     }
 
     protected boolean checkLocationPermission(boolean requestPermission) {
