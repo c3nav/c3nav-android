@@ -22,6 +22,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.transition.AutoTransition;
@@ -70,8 +71,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+        implements ActivityCompat.OnRequestPermissionsResultCallback {
 
+    //Request Codes
     public static final int PERM_REQUEST = 1;
     private WifiManager wifiManager;
     private PowerManager powerManager;
@@ -602,6 +605,16 @@ public class MainActivity extends AppCompatActivity {
             splashScreenPaused = true;
         }
         super.onPause();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERM_REQUEST:
+                if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    locationPermissionCache = Boolean.TRUE;
+                }
+        }
     }
 
     protected boolean isLocationPermissionRequested() {
