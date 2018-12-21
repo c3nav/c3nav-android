@@ -11,6 +11,11 @@
             android:title="@string/keep_on_top" />
         <CheckBoxPreference
             android:defaultValue="true"
+            android:key="@string/keep_screen_on_key"
+            android:summary="@string/keep_screen_on_summary"
+            android:title="@string/keep_screen_on" />
+        <CheckBoxPreference
+            android:defaultValue="true"
             android:key="@string/use_wifi_locating_key"
             android:summary="@string/use_wifi_locating_summary"
             android:title="@string/use_wifi_locating" />

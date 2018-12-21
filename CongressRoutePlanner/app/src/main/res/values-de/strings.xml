@@ -24,6 +24,8 @@
     <string name="general_settings">Allgemeine Einstellungen</string>
     <string name="keep_on_top">Im Vordergrund behalten</string>
     <string name="keep_on_top_summary">c3nav im Vordergrund behalten und über dem Lockscreen anzeigen</string>
+    <string name="keep_screen_on">Wach bleiben während WLAN Messung</string>
+    <string name="keep_screen_on_summary">Wach bleiben und Bilschirm nicht sperren währen während WLAN Messung läuft</string>
     <string name="use_wifi_locating">WLAN-basierte Ortung</string>
     <string name="use_wifi_locating_summary">Nutze WLAN-basierte Ortung um deine aktuelle Postion zu bestimmen</string>
     <string name="developer_mode_enabled">Entwickler Modus</string>

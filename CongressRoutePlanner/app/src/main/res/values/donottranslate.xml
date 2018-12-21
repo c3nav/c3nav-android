@@ -2,6 +2,7 @@
 <resources>
     <string name="location_permission_requested_key">locationPermissionRequested</string>
     <string name="keep_on_top_key">keepOnTop</string>
+    <string name="keep_screen_on_key">keepScreenOn</string>
     <string name="use_wifi_locating_key">useWifiLocating</string>
     <string name="developer_settings_key">developerSettings</string>
     <string name="developer_mode_enabled_key">developerModeEnabled</string>

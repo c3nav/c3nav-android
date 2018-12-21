@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity
 
     private boolean loggedIn = false;
     private boolean inEditor = false;
+    private boolean wifiMeasurementRunning = false;
     private boolean hasChangeSet = false;
 
     private TextView navHeaderTitle;
@@ -131,6 +132,7 @@ public class MainActivity extends AppCompatActivity
 
     private SharedPreferences sharedPrefs;
     private boolean settingKeepOnTop = true;
+    private boolean settingKeepScreenOn = true;
     private boolean settingUseWifiLocating = true;
     private boolean settingDeveloperModeEnabled = false;
     private String settingDeveloperInstanceUrl = "";
@@ -421,7 +423,7 @@ public class MainActivity extends AppCompatActivity
 
     protected void updatedSettings() {
         settingKeepOnTop = sharedPrefs.getBoolean(getString(R.string.keep_on_top_key), true);
-        //settingStayAwake = sharedPrefs.getBoolean(getString(R.string.stay_awake_key), false);
+        settingKeepScreenOn = sharedPrefs.getBoolean(getString(R.string.keep_screen_on_key), false);
         settingUseWifiLocating = sharedPrefs.getBoolean(getString(R.string.use_wifi_locating_key), true);
 
         setWindowFlags();
@@ -765,8 +767,21 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    protected boolean isInEditor() {
+    public boolean isInEditor() {
         return this.inEditor;
+    }
+
+    protected void setWifiMeasurementRunning(boolean wifiMeasurementRunning) {
+        boolean wifiMeasurementRunningOld = this.wifiMeasurementRunning;
+        this.wifiMeasurementRunning = wifiMeasurementRunning;
+
+        if (wifiMeasurementRunningOld != this.wifiMeasurementRunning) {
+            setWindowFlags();
+        }
+    }
+
+    public boolean isWifiMeasurementRunning() {
+        return this.wifiMeasurementRunning;
     }
 
     class MobileClient {
@@ -895,11 +910,13 @@ public class MainActivity extends AppCompatActivity
         @JavascriptInterface
         public void wificollectorStart() {
             Log.d("c3nav", "wificollector started");
+            setWifiMeasurementRunning(true);
         }
 
         @JavascriptInterface
         public void wificollectorStop() {
             Log.d("c3nav", "wificollector stopped");
+            setWifiMeasurementRunning(false);
         }
     }
 
@@ -1007,10 +1024,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setWindowFlags() {
-        if (settingKeepOnTop && !isInEditor()) {
+        if ((settingKeepOnTop && !isInEditor()) || settingKeepScreenOn && isWifiMeasurementRunning()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         } else {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        }
+
+        if(settingKeepScreenOn && isWifiMeasurementRunning()) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
 
