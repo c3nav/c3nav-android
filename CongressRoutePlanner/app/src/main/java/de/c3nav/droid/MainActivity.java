@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity
     private boolean logoScreenIsVisible = false;
     private boolean loginScreenIsActive = false;
 
-    private SharedPreferences sharePrefs;
+    private SharedPreferences sharedPrefs;
     private boolean settingKeepOnTop = true;
     private boolean settingUseWifiLocating = true;
 
@@ -157,8 +157,8 @@ public class MainActivity extends AppCompatActivity
                         intentCategories.contains(Intent.CATEGORY_DEFAULT) ||
                         intentCategories.contains(Intent.CATEGORY_BROWSABLE) );
 
-        sharePrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        locationPermissionRequested = sharePrefs.getBoolean(getString(R.string.location_permission_requested_key), false);
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        locationPermissionRequested = sharedPrefs.getBoolean(getString(R.string.location_permission_requested_key), false);
         updatedSettings();
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
@@ -394,9 +394,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     protected void updatedSettings() {
-        settingKeepOnTop = sharePrefs.getBoolean(getString(R.string.keep_on_top_key), true);
-        //settingStayAwake = sharePrefs.getBoolean(getString(R.string.stay_awake_key), false);
-        settingUseWifiLocating = sharePrefs.getBoolean(getString(R.string.use_wifi_locating_key), true);
+        settingKeepOnTop = sharedPrefs.getBoolean(getString(R.string.keep_on_top_key), true);
+        //settingStayAwake = sharedPrefs.getBoolean(getString(R.string.stay_awake_key), false);
+        settingUseWifiLocating = sharedPrefs.getBoolean(getString(R.string.use_wifi_locating_key), true);
 
         setWindowFlags();
     }
@@ -644,7 +644,7 @@ public class MainActivity extends AppCompatActivity
                 if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     locationPermissionCache = Boolean.TRUE;
                     if (!settingUseWifiLocating) {
-                        SharedPreferences.Editor editor = sharePrefs.edit();
+                        SharedPreferences.Editor editor = sharedPrefs.edit();
                         editor.putBoolean(getString(R.string.use_wifi_locating_key), true);
                         editor.commit();
                         settingUseWifiLocating = true;
@@ -662,7 +662,7 @@ public class MainActivity extends AppCompatActivity
 
     private void setLocationPermissionRequested(boolean locationPermissionRequested) {
         this.locationPermissionRequested = locationPermissionRequested;
-        SharedPreferences.Editor editor = sharePrefs.edit();
+        SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putBoolean(getString(R.string.location_permission_requested_key), locationPermissionRequested);
         editor.commit();
     }
