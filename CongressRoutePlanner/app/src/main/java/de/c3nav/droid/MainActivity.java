@@ -649,7 +649,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("lifecycleEvents", "onPostResume called");
+        Log.d("lifecycleEvents", "onResume called");
         if(checkLocationPermission(false, true)) startScan();
         registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         if (splashScreenPaused && !splashScreenDone) {
