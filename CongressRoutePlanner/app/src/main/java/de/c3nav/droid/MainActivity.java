@@ -820,8 +820,8 @@ public class MainActivity extends AppCompatActivity
 
                     String changesCountDisplay = user_data.optString("changes_count_display");
                     editorChangesLink.setTitle(changesCountDisplay);
-                    navigationMenu.setGroupVisible(R.id.editorNav, !changesCountDisplay.isEmpty());
                     editorDashboardLink.setVisible(loggedIn);
+                    navigationMenu.setGroupVisible(R.id.editorNav, !changesCountDisplay.isEmpty());
 
                     boolean directEditing = user_data.optBoolean("direct_editing");
                     editorChangesLink.setIcon(directEditing ? R.drawable.ic_assignment_turned_in : R.drawable.ic_assignment);
