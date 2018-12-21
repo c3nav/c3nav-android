@@ -409,7 +409,7 @@ public class MainActivity extends AppCompatActivity
             Log.d("c3navIntendUriBuilder", "final url: " + url_to_call);
         }
 
-        CookieManager.getInstance().setCookie(instanceBaseUrl.toString(), "lang=" + Locale.getDefault().getLanguage());
+        CookieManager.getInstance().setCookie(instanceBaseUrl.toString(), "c3nav_language=" + Locale.getDefault().getLanguage());
         webView.loadUrl(url_to_call);
 
         hasLocationPermission(); //initialize locationPermissionCache
