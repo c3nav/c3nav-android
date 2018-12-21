@@ -631,8 +631,8 @@ public class MainActivity extends AppCompatActivity
         editor.commit();
     }
 
-    protected boolean checkLocationPermission(boolean requestPermission, boolean ingoreCache) {
-        if (ingoreCache || locationPermissionCache == null) {
+    protected boolean checkLocationPermission(boolean requestPermission, boolean ignoreCache) {
+        if (ignoreCache || locationPermissionCache == null) {
             int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
                     Manifest.permission.ACCESS_FINE_LOCATION);
             locationPermissionCache = new Boolean(permissionCheck == PackageManager.PERMISSION_GRANTED);
