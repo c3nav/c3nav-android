@@ -25,4 +25,5 @@
     <string name="keep_on_top">Im Vordergrund behalten</string>
     <string name="keep_on_top_summary">c3nav im Vordergrund behalten und über dem Lockscreen anzeigen.</string>
     <string name="use_wifi_locating">WLAN-basierte Ortung</string>
+    <string name="use_wifi_locating_summary">Nutze WLAN-basierte Ortung um deine aktuelle Postion zu bestimmen.</string>
 </resources>

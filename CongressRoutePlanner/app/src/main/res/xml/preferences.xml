@@ -12,6 +12,7 @@
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="@string/use_wifi_locating_key"
+            android:summary="@string/use_wifi_locating_summary"
             android:title="@string/use_wifi_locating" />
 
     </PreferenceCategory>
