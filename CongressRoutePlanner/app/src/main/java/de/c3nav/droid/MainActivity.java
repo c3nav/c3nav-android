@@ -891,6 +891,16 @@ public class MainActivity extends AppCompatActivity
             });
 
         }
+
+        @JavascriptInterface
+        public void wificollectorStart() {
+            Log.d("c3nav", "wificollector started");
+        }
+
+        @JavascriptInterface
+        public void wificollectorStop() {
+            Log.d("c3nav", "wificollector stopped");
+        }
     }
 
     private void evaluateJavascript(String script, ValueCallback<String> resultCallback) {
