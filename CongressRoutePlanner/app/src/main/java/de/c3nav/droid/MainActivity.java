@@ -102,6 +102,7 @@ public class MainActivity extends AppCompatActivity
     private Button authLoginButton;
 
     private boolean loggedIn = false;
+    private boolean inEditor = false;
     private boolean hasChangeSet = false;
 
     private TextView navHeaderTitle;
@@ -709,6 +710,19 @@ public class MainActivity extends AppCompatActivity
         wifiManager.startScan();
     }
 
+    protected void setInEditor(boolean inEditor) {
+        boolean inEditorOld = this.inEditor;
+        this.inEditor = inEditor;
+
+        if (inEditorOld != this.inEditor) {
+            setWindowFlags();
+        }
+    }
+
+    protected boolean isInEditor() {
+        return this.inEditor;
+    }
+
     class MobileClient {
         private JSONArray nearbyStations;
 
@@ -822,6 +836,7 @@ public class MainActivity extends AppCompatActivity
                     editorChangesLink.setTitle(changesCountDisplay);
                     editorDashboardLink.setVisible(loggedIn);
                     navigationMenu.setGroupVisible(R.id.editorNav, !changesCountDisplay.isEmpty());
+                    MainActivity.this.setInEditor(!changesCountDisplay.isEmpty());
 
                     boolean directEditing = user_data.optBoolean("direct_editing");
                     editorChangesLink.setIcon(directEditing ? R.drawable.ic_assignment_turned_in : R.drawable.ic_assignment);
@@ -936,7 +951,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setWindowFlags() {
-        if (settingkeepOnTop) {
+        if (settingkeepOnTop && !isInEditor()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         } else {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
