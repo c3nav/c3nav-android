@@ -10,8 +10,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.ShortcutInfo;
+import android.content.pm.ShortcutManager;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.graphics.drawable.Icon;
 import android.media.MediaPlayer;
 import android.net.ParseException;
 import android.net.Uri;
@@ -71,7 +74,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -79,6 +84,11 @@ import java.util.Set;
 
 public class MainActivity extends AppCompatActivity
         implements ActivityCompat.OnRequestPermissionsResultCallback {
+
+    //Actions
+    public static final String ACTION_CURRENT_LOCATION = "de.c3nav.droid.action.CURRENT_LOCATION";
+    public static final String ACTION_CONTROL_PANEL = "de.c3nav.droid.action.CONTROL_PANEL";
+    public static final String ACTION_EDITOR = "de.c3nav.droid.action.EDITOR";
 
     //Request Codes
     public static final int PERM_REQUEST = 1;
@@ -404,10 +414,18 @@ public class MainActivity extends AppCompatActivity
         updateSettings();
         hasLocationPermission(); //initialize locationPermissionCache
         cachedUserPermissions = new CachedUserPermissions();
+        updateDynamicShortcuts();
 
         String url_to_call = instanceBaseUrl.toString();
         Uri data = intent.getData();
-        if (data != null) {
+
+        if (intent.getAction().equals(ACTION_CONTROL_PANEL)) {
+            url_to_call = instanceBaseUrl.buildUpon().appendPath("control").build().toString();
+        } else if (intent.getAction().equals(ACTION_CURRENT_LOCATION)) {
+            mobileClient.setCurrentLocationRequested(true);
+        } else if (intent.getAction().equals(ACTION_EDITOR)) {
+            url_to_call = instanceBaseUrl.buildUpon().appendPath("editor").build().toString();
+        } else if (data != null) {
             Uri.Builder tmp_uri = data.buildUpon();
             tmp_uri.scheme("https");
             List<String> pathSegments = data.getPathSegments();
@@ -803,6 +821,7 @@ public class MainActivity extends AppCompatActivity
 
     class MobileClient {
         private JSONArray nearbyStations;
+        private boolean currentLocationRequested;
 
         @JavascriptInterface
         public String getNearbyStations() {
@@ -955,6 +974,24 @@ public class MainActivity extends AppCompatActivity
                 }
             });
         }
+
+        public void setCurrentLocationRequested(boolean currentLocationRequested) {
+            this.currentLocationRequested = currentLocationRequested;
+        }
+
+        @JavascriptInterface
+        public boolean isCurrentLocationRequested() {
+            if (this.currentLocationRequested) {
+                this.currentLocationRequested = false;
+                return true;
+            }
+            return false;
+        }
+
+        @JavascriptInterface
+        public void currentLocationRequesteFailed() {
+            Toast.makeText(MainActivity.this, R.string.current_location_request_failed, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void evaluateJavascript(String script, ValueCallback<String> resultCallback) {
@@ -1079,6 +1116,88 @@ public class MainActivity extends AppCompatActivity
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
+
+    public Intent getShortcutIntet(@NonNull String action, Uri data) {
+        Intent shortcutIntent = new Intent(getApplicationContext(), MainActivity.class);
+        shortcutIntent.setAction(action);
+        if (data != null) shortcutIntent.setData(data);
+        return shortcutIntent;
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N_MR1)
+    public ShortcutInfo getShortcutInfo(@NonNull String id, @NonNull String shortLabel, String longLabel, @NonNull Icon icon, @NonNull String action, Uri data) {
+        ShortcutInfo.Builder shortcutInfoBuilder = new ShortcutInfo.Builder(getApplicationContext(), action)
+                .setShortLabel(shortLabel)
+                .setIcon(icon)
+                .setIntent(getShortcutIntet(action, null));
+        if (longLabel != null) shortcutInfoBuilder.setLongLabel(longLabel);
+        return shortcutInfoBuilder.build();
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N_MR1)
+    public ShortcutInfo getShortcutInfo(@NonNull String id, @NonNull int shortLabelRessource, int longLabelRessource, @NonNull int iconRessource, @NonNull String action, Uri data) {
+        String shortLabel = getString(shortLabelRessource);
+        String longLabel = (longLabelRessource != -1) ? getString(longLabelRessource) : null;
+        Icon icon = Icon.createWithResource(getApplicationContext(), iconRessource);
+        return getShortcutInfo(id,shortLabel, longLabel, icon, action, data);
+    }
+
+    public void updateDynamicShortcuts() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return;
+
+        final String CONTROL_PANEL_SHORTCUT_ID = "controlPanel";
+        final String EDITOR_SHORTCUT_ID = "editor";
+        final String SHORTCUT_PROGRAM_VERSION_KEY = "shortcutsLastUpdatedByVersion";
+
+        boolean updateForced = false;
+
+        ShortcutManager shortcutManager = getApplicationContext().getSystemService(ShortcutManager.class);
+
+        List<ShortcutInfo> installedDynamicShortcuts = shortcutManager.getDynamicShortcuts();
+        Set<String> installedDynamicShortcutsIDs = new HashSet<String>();
+        Map<String,ShortcutInfo> currentDynamicShortcuts = new HashMap<String,ShortcutInfo>();
+
+        for (ShortcutInfo shortcutInfo : installedDynamicShortcuts) {
+            installedDynamicShortcutsIDs.add(shortcutInfo.getId());
+        }
+
+        // if shortcuts have been last updated by a different version recreate all, otherwise only changed.
+        if (BuildConfig.VERSION_CODE != sharedPrefs.getInt(SHORTCUT_PROGRAM_VERSION_KEY, -1)) {
+            Log.d("c3nav-shortcuts", "Program version changed, forcing update");
+            updateForced = true;
+        }
+
+        if (cachedUserPermissions.hasControlPanelPermission()) {
+            ShortcutInfo shortcutInfo = getShortcutInfo(CONTROL_PANEL_SHORTCUT_ID, R.string.shortcut_control_panel_short, R.string.shortcut_control_panel_long, R.drawable.ic_shortcut_build, ACTION_CONTROL_PANEL, null);
+            currentDynamicShortcuts.put(shortcutInfo.getId(), shortcutInfo);
+        }
+
+        if (cachedUserPermissions.hasEditorPermission()) {
+            ShortcutInfo shortcutInfo = getShortcutInfo(EDITOR_SHORTCUT_ID, R.string.shortcut_editor_short, R.string.shortcut_editor_long, R.drawable.ic_shortcut_edit, ACTION_EDITOR, null);
+            currentDynamicShortcuts.put(shortcutInfo.getId(), shortcutInfo);
+        }
+
+        for (ShortcutInfo shortcutInfo : installedDynamicShortcuts) {
+            if (currentDynamicShortcuts.containsKey(shortcutInfo.getId()) && !currentDynamicShortcuts.get(shortcutInfo.getId()).getIntent().getAction().equals(shortcutInfo.getIntent().getAction())) {
+                Log.d("c3nav-shortcuts", "An Intend of an shortcut changed. forcing update");
+                Log.d("c3nav-shortcuts", "new:" + currentDynamicShortcuts.get(shortcutInfo.getId()).getIntent().getAction() + " old:" +shortcutInfo.getIntent().getAction());
+                updateForced = true;
+                break;
+            }
+        }
+
+        if (updateForced || !installedDynamicShortcutsIDs.equals(currentDynamicShortcuts.keySet())) {
+            Log.d("c3nav-shortcuts", "DynamicShortcuts need update, updating...");
+            if(currentDynamicShortcuts.isEmpty()) {
+                shortcutManager.removeAllDynamicShortcuts();
+            } else {
+                shortcutManager.setDynamicShortcuts(new ArrayList<ShortcutInfo>(currentDynamicShortcuts.values()));
+            }
+            sharedPrefs.edit().putInt(SHORTCUT_PROGRAM_VERSION_KEY, BuildConfig.VERSION_CODE).apply();
+        }
+
+    }
+
 
     class CachedUserPermissions {
         private boolean allowControlPanel = false;

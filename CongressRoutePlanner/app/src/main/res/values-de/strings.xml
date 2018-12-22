@@ -6,6 +6,12 @@
     <string name="refresh">Aktualisieren</string>
     <string name="shortcut_created">Eine Verknüpfung wurde erstellt</string>
     <string name="shortcut_not_supported">Dein Launcher unterstützt leider keine Verknüfpungen.</string>
+    <string name="shortcut_control_panel_short">Control Panel</string>
+    <string name="shortcut_control_panel_long">c3nav control panel Öffnen</string>
+    <string name="shortcut_current_location_short">Position Anzeigen</string>
+    <string name="shortcut_current_location_long">Aktuelle Position Anzeigen</string>
+    <string name="shortcut_editor_short">Editor</string>
+    <string name="shortcut_editor_long">c3nav Editor Öffnen</string>
     <string name="auth_user">Nutzername</string>
     <string name="auth_pw">Passwort</string>
     <string name="auth_title">Wir bitten um etwas Geduld, c3nav ist noch nicht öffentlich verfügbar.</string>
@@ -33,4 +39,5 @@
     <string name="developer_instance_url">Instanz URL Überschreiben</string>
     <string name="developer_http_user">HTTP Benutzername</string>
     <string name="developer_http_password">HTTP Passwort</string>
+    <string name="current_location_request_failed">Aktuelle Position kann nicht bestimmt werden</string>
 </resources>

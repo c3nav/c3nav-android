@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="currentLocation"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_my_location"
+        android:shortcutShortLabel="@string/shortcut_current_location_short"
+        android:shortcutLongLabel="@string/shortcut_current_location_long">
+
+        <intent
+            android:action="de.c3nav.droid.action.CURRENT_LOCATION"
+            android:targetPackage="de.c3nav.droid"
+            android:targetClass="de.c3nav.droid.MainActivity" />
+
+    </shortcut>
+</shortcuts>

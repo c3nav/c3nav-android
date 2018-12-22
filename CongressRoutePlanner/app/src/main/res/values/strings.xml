@@ -5,6 +5,12 @@
     <string name="refresh">Refresh</string>
     <string name="shortcut_created">A shortcut has been created</string>
     <string name="shortcut_not_supported">Sorry, your launcher doesn\'t support shortcuts.</string>
+    <string name="shortcut_control_panel_short">Control Panel</string>
+    <string name="shortcut_control_panel_long">Open c3nav control panel</string>
+    <string name="shortcut_current_location_short">Current Position</string>
+    <string name="shortcut_current_location_long">Show Current Position</string>
+    <string name="shortcut_editor_short">Editor</string>
+    <string name="shortcut_editor_long">Open c3nav editor</string>
     <string name="auth_user">Username</string>
     <string name="auth_pw">Password</string>
     <string name="auth_title">Please be patient, c3nav is not yet available for the general public.</string>
@@ -32,4 +38,5 @@
     <string name="developer_instance_url">Instance URL Override</string>
     <string name="developer_http_user">HTTP Username</string>
     <string name="developer_http_password">HTTP Password</string>
+    <string name="current_location_request_failed">Current location can\'t  be determined.</string>
 </resources>

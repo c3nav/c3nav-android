@@ -47,6 +47,17 @@
                     android:pathPrefix="/"
                     android:scheme="https" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="de.c3nav.droid.action.CURRENT_LOCATION" />
+                <action android:name="de.c3nav.droid.action.CONTROL_PANEL" />
+                <action android:name="de.c3nav.droid.action.EDITOR" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
         <activity android:name=".SettingsActivity" />
     </application>
