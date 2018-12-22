@@ -423,7 +423,7 @@ public class MainActivity extends AppCompatActivity
 
     protected void updatedSettings() {
         settingKeepOnTop = sharedPrefs.getBoolean(getString(R.string.keep_on_top_key), true);
-        settingKeepScreenOn = sharedPrefs.getBoolean(getString(R.string.keep_screen_on_key), false);
+        settingKeepScreenOn = sharedPrefs.getBoolean(getString(R.string.keep_screen_on_key), true);
         settingUseWifiLocating = sharedPrefs.getBoolean(getString(R.string.use_wifi_locating_key), true);
 
         setWindowFlags();
@@ -910,13 +910,23 @@ public class MainActivity extends AppCompatActivity
         @JavascriptInterface
         public void wificollectorStart() {
             Log.d("c3nav", "wificollector started");
-            setWifiMeasurementRunning(true);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    setWifiMeasurementRunning(true);
+                }
+            });
         }
 
         @JavascriptInterface
         public void wificollectorStop() {
             Log.d("c3nav", "wificollector stopped");
-            setWifiMeasurementRunning(false);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    setWifiMeasurementRunning(false);
+                }
+            });
         }
     }
 
