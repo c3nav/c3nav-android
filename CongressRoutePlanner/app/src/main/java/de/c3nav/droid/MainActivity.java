@@ -323,6 +323,7 @@ public class MainActivity extends AppCompatActivity
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
                 swipeLayout.setRefreshing(true);
+                if (isWifiMeasurementRunning()) setWifiMeasurementRunning(false);
                 Log.d("c3navWebView", "loading started");
             }
 
