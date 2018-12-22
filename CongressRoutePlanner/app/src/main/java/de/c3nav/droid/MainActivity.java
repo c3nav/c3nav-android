@@ -1234,6 +1234,7 @@ public class MainActivity extends AppCompatActivity
                         .putBoolean(KEY_ALLOW_EDITOR, allowEditor)
                         .putBoolean(KEY_LOGGED_IN, loggedIn)
                         .apply();
+                updateDynamicShortcuts();
             }
         }
 
