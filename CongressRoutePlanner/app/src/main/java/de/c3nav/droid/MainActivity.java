@@ -707,7 +707,7 @@ public class MainActivity extends AppCompatActivity
                     if (!settingUseWifiLocating) {
                         SharedPreferences.Editor editor = sharedPrefs.edit();
                         editor.putBoolean(getString(R.string.use_wifi_locating_key), true);
-                        editor.commit();
+                        editor.apply();
                         settingUseWifiLocating = true;
                     }
                     // let the js know we have location permission now and start a single scan
@@ -725,7 +725,7 @@ public class MainActivity extends AppCompatActivity
         this.locationPermissionRequested = locationPermissionRequested;
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putBoolean(getString(R.string.location_permission_requested_key), locationPermissionRequested);
-        editor.commit();
+        editor.apply();
     }
 
     protected boolean checkLocationPermission(boolean requestPermission, boolean ignoreCache) {
