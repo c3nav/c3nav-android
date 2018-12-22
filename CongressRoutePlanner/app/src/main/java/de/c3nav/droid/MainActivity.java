@@ -760,6 +760,7 @@ public class MainActivity extends AppCompatActivity
         return checkLocationPermission(false);
     }
 
+    @SuppressWarnings("deprecation")
     protected void startScan() {
         if (!settingUseWifiLocating) return;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
@@ -1054,14 +1055,20 @@ public class MainActivity extends AppCompatActivity
         setWindowFlags();
     }
 
+    @SuppressWarnings("deprecation")
     private void setWindowFlags() {
-        if ((settingKeepOnTop && !isInEditor()) || settingKeepScreenOn && isWifiMeasurementRunning()) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1) {
+            if ((settingKeepOnTop && !isInEditor()) || settingKeepScreenOn && isWifiMeasurementRunning()) {
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+
+            } else {
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+            }
         } else {
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+            setShowWhenLocked((settingKeepOnTop && !isInEditor()) || settingKeepScreenOn && isWifiMeasurementRunning());
         }
 
-        if(settingKeepScreenOn && isWifiMeasurementRunning()) {
+        if (settingKeepScreenOn && isWifiMeasurementRunning()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         } else {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
