@@ -33,6 +33,9 @@ import android.support.transition.Transition;
 import android.support.transition.TransitionManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.pm.ShortcutInfoCompat;
+import android.support.v4.content.pm.ShortcutManagerCompat;
+import android.support.v4.graphics.drawable.IconCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -852,16 +855,23 @@ public class MainActivity extends AppCompatActivity
             shortcutIntent.setAction(Intent.ACTION_MAIN);
             shortcutIntent.setData(Uri.parse(url));
 
-            Intent addIntent = new Intent();
-            addIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
-            addIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, title);
-            addIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE,
-                    Intent.ShortcutIconResource.fromContext(getApplicationContext(),
-                            R.mipmap.ic_launcher_35c3));
-            addIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
-            getApplicationContext().sendBroadcast(addIntent);
+            if (!ShortcutManagerCompat.isRequestPinShortcutSupported(getApplicationContext())) {
+                Toast.makeText(MainActivity.this, R.string.shortcut_not_supported, Toast.LENGTH_LONG).show();
+            }
 
-            Toast.makeText(MainActivity.this, R.string.shortcut_created, Toast.LENGTH_SHORT).show();
+            final ShortcutInfoCompat shortcutInfo = new ShortcutInfoCompat.Builder(getApplicationContext(), url)
+                    .setShortLabel(title)
+                    .setLongLabel(title)
+                    .setIcon(IconCompat.createWithResource(getApplicationContext(), R.mipmap.ic_launcher_35c3))
+                    .setIntent(shortcutIntent)
+                    .build();
+
+            ShortcutManagerCompat.requestPinShortcut(getApplicationContext(), shortcutInfo, null);
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                Toast.makeText(MainActivity.this, R.string.shortcut_created, Toast.LENGTH_SHORT).show();
+            }
+
         }
 
         @JavascriptInterface
