@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
-        updatedSettings();
+        updateSettings();
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
@@ -422,7 +422,7 @@ public class MainActivity extends AppCompatActivity
         powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
     }
 
-    protected void updatedSettings() {
+    protected void updateSettings() {
         settingKeepOnTop = sharedPrefs.getBoolean(getString(R.string.keep_on_top_key), true);
         settingKeepScreenOn = sharedPrefs.getBoolean(getString(R.string.keep_screen_on_key), true);
         settingUseWifiLocating = sharedPrefs.getBoolean(getString(R.string.use_wifi_locating_key), true);
@@ -680,7 +680,7 @@ public class MainActivity extends AppCompatActivity
         switch (requestCode) {
             case SETTINGS_REQUEST:
                 Log.d("onActivityResult", "settings activity finished with result code " + resultCode);
-                updatedSettings();
+                updateSettings();
                 break;
         }
     }
