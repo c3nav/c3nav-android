@@ -180,7 +180,6 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
-        updateSettings();
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
@@ -283,6 +282,10 @@ public class MainActivity extends AppCompatActivity
         webView = findViewById(R.id.webView);
         swipeLayout = findViewById(R.id.swipe_container);
 
+        wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        wifiReceiver = new WifiReceiver();
+
+        powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
 
         if (activityStartedFromLauncher) {
             mDrawerLayout.closeDrawers();
@@ -394,6 +397,9 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        updateSettings();
+        hasLocationPermission(); //initialize locationPermissionCache
+
         String url_to_call = instanceBaseUrl.toString();
         Uri data = intent.getData();
         if (data != null) {
@@ -415,11 +421,6 @@ public class MainActivity extends AppCompatActivity
         CookieManager.getInstance().setCookie(instanceBaseUrl.toString(), "c3nav_language=" + Locale.getDefault().getLanguage());
         webView.loadUrl(url_to_call);
 
-        hasLocationPermission(); //initialize locationPermissionCache
-        wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        wifiReceiver = new WifiReceiver();
-
-        powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
     }
 
     protected void updateSettings() {
