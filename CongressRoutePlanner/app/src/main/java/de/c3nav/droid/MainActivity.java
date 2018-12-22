@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity
 
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         locationPermissionRequested = sharedPrefs.getBoolean(getString(R.string.location_permission_requested_key), false);
-        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG && sharedPrefs.getBoolean(getString(R.string.developer_mode_enabled_key), false)) {
             settingDeveloperInstanceUrl = sharedPrefs.getString(getString(R.string.developer_instance_url_key), "");
 
             if (!settingDeveloperInstanceUrl.isEmpty()) {
