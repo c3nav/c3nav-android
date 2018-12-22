@@ -757,7 +757,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (!locationPermissionCache.booleanValue()) {
-            if (requestPermission) {
+            if (requestPermission || !locationPermissionRequested) {
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         PERM_REQUEST);
