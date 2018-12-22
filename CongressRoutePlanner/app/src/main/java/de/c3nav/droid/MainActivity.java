@@ -197,10 +197,10 @@ public class MainActivity extends AppCompatActivity
                         switch (item.getItemId()) {
                             case R.id.accountLink:
                                 Uri uri;
-                                if(loggedIn) {
-                                    uri=MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/account/").build();
+                                if (loggedIn) {
+                                    uri = MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/account/").build();
                                 } else {
-                                    uri=MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/login")
+                                    uri = MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/login")
                                             .appendQueryParameter("next", Uri.parse(webView.getUrl()).getPath()).build();
                                 }
                                 MainActivity.this.evaluateJavascript("window.openInModal ? openInModal('" + uri.toString() + "') : window.location='" + uri.toString() + "';");
