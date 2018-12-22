@@ -426,7 +426,16 @@ public class MainActivity extends AppCompatActivity
     protected void updateSettings() {
         settingKeepOnTop = sharedPrefs.getBoolean(getString(R.string.keep_on_top_key), true);
         settingKeepScreenOn = sharedPrefs.getBoolean(getString(R.string.keep_screen_on_key), true);
-        settingUseWifiLocating = sharedPrefs.getBoolean(getString(R.string.use_wifi_locating_key), true);
+        if (settingUseWifiLocating != sharedPrefs.getBoolean(getString(R.string.use_wifi_locating_key), true)) {
+            Log.d("c3nav-settings", "useWifiLocationSetting updated");
+            settingUseWifiLocating = sharedPrefs.getBoolean(getString(R.string.use_wifi_locating_key), true);
+            if (settingUseWifiLocating) {
+                startScan();
+            } else {
+                mobileClient.setNearbyStations(null);
+            }
+            MainActivity.this.evaluateJavascript("nearby_stations_available();");
+        }
 
         setWindowFlags();
 
