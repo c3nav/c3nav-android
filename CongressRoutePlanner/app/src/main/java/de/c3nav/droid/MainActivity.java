@@ -889,7 +889,7 @@ public class MainActivity extends AppCompatActivity
                     if (loggedIn) {
                         navHeaderTitle.setText(user_data.optString("title"));
                         navHeaderTitle.setTypeface(null, Typeface.NORMAL);
-                        navHeaderSubtitle.setText(user_data.optString("subtitle"));
+                        navHeaderSubtitle.setText(user_data.isNull("subtitle") ? "" : user_data.optString("subtitle"));
                         accountLink.setTitle(R.string.your_account);
                     } else {
                         navHeaderTitle.setText(R.string.not_logged_in);
