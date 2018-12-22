@@ -107,6 +107,7 @@ public class MainActivity extends AppCompatActivity
     private TextView authMessage;
     private Button authLoginButton;
 
+    private CachedUserPermissions cachedUserPermissions;
     private boolean loggedIn = false;
     private boolean inEditor = false;
     private boolean wifiMeasurementRunning = false;
@@ -402,6 +403,7 @@ public class MainActivity extends AppCompatActivity
 
         updateSettings();
         hasLocationPermission(); //initialize locationPermissionCache
+        cachedUserPermissions = new CachedUserPermissions();
 
         String url_to_call = instanceBaseUrl.toString();
         Uri data = intent.getData();
@@ -883,9 +885,11 @@ public class MainActivity extends AppCompatActivity
             try {
                 user_data = new JSONObject(data);
             } catch (JSONException e) {
-                Log.d("c3nav", "invalid JSON in setUserData: " + data);
+                Log.e("c3nav", "invalid JSON in setUserData: " + data, e);
                 return;
             }
+
+            cachedUserPermissions.updateFromUserData(user_data);
 
             runOnUiThread(new Runnable() {
 
@@ -894,6 +898,7 @@ public class MainActivity extends AppCompatActivity
                     try {
                         loggedIn = user_data.getBoolean("logged_in");
                     } catch (JSONException e) {
+                        Log.e("c3navUserData", "missing required key logged_in in user data json object", e);
                         return;
                     }
 
@@ -1075,4 +1080,54 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    class CachedUserPermissions {
+        private boolean allowControlPanel = false;
+        private boolean allowEditor = false;
+        private boolean loggedIn = false;
+
+        public final static String KEY_ALLOW_CONTROL_PANEL = "cachedUserPermissionControlPanel";
+        public final static String KEY_ALLOW_EDITOR = "cachedUserPermissionEditor";
+        public final static String KEY_LOGGED_IN = "cachedUserPermissionLoggedIn";
+
+        CachedUserPermissions() {
+            super();
+            allowControlPanel = sharedPrefs.getBoolean(KEY_ALLOW_CONTROL_PANEL, false);
+            allowEditor = sharedPrefs.getBoolean(KEY_ALLOW_EDITOR, false);
+            loggedIn = sharedPrefs.getBoolean(KEY_LOGGED_IN, false);
+        }
+
+        public void updateFromUserData(JSONObject userData) {
+            boolean allowControlPanelOld = this.allowControlPanel;
+            boolean allowEditorOld = this.allowEditor;
+            boolean loggedInOld = this.loggedIn;
+
+            try {
+                allowControlPanel = userData.getBoolean("allow_control_panel");
+                allowEditor = userData.getBoolean("allow_editor");
+                loggedIn = userData.getBoolean("logged_in");
+            } catch (JSONException e) {
+                Log.e("c3navUserData", "failed to parse user data json object", e);
+            }
+
+            if (allowControlPanel != allowControlPanelOld || allowEditor != allowEditorOld || loggedIn != loggedInOld) {
+                sharedPrefs.edit()
+                        .putBoolean(KEY_ALLOW_CONTROL_PANEL, allowControlPanel)
+                        .putBoolean(KEY_ALLOW_EDITOR, allowEditor)
+                        .putBoolean(KEY_LOGGED_IN, loggedIn)
+                        .apply();
+            }
+        }
+
+        public boolean hasControlPanelPermission() {
+            return allowControlPanel;
+        }
+
+        public boolean hasEditorPermission() {
+            return allowEditor;
+        }
+
+        public boolean isLoggedIn() {
+            return loggedIn;
+        }
+    }
 }
