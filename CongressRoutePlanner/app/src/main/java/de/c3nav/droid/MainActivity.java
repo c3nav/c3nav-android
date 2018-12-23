@@ -51,6 +51,7 @@ import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -58,6 +59,7 @@ import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
 import android.view.ViewManager;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.webkit.CookieManager;
 import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
@@ -277,16 +279,19 @@ public class MainActivity extends AppCompatActivity
         authLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (lastAuthHandler != null) {
-                    lastAuthHandler.proceed(authUsername.getText().toString(), authPassword.getText().toString());
-                    lastAuthHandler = null;
-                    authLoginButton.setEnabled(false);
-                    authUsername.setEnabled(false);
-                    authPassword.setEnabled(false);
-                } else {
-                    hideLoginScreen();
-                }
+                MainActivity.this.handleLoginScreenSubmitt();
+            }
+        });
 
+        authPassword.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_SEND
+                        || keyEvent != null && keyEvent.getAction() == KeyEvent.ACTION_DOWN && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                    MainActivity.this.handleLoginScreenSubmitt();
+                    return true;
+                }
+                return false;
             }
         });
 
@@ -689,6 +694,18 @@ public class MainActivity extends AppCompatActivity
 
     protected void maybeHideLoginScreen() {
         if (loginScreenIsActive && initialPageLoaded) {
+            hideLoginScreen();
+        }
+    }
+
+    protected void handleLoginScreenSubmitt() {
+        if (lastAuthHandler != null) {
+            lastAuthHandler.proceed(authUsername.getText().toString(), authPassword.getText().toString());
+            lastAuthHandler = null;
+            authLoginButton.setEnabled(false);
+            authUsername.setEnabled(false);
+            authPassword.setEnabled(false);
+        } else {
             hideLoginScreen();
         }
     }

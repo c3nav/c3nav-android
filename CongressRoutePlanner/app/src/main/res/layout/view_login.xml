@@ -37,6 +37,7 @@
         android:ems="10"
         android:hint="@string/auth_user"
         android:inputType="textNoSuggestions"
+        android:imeOptions="actionNext"
         android:visibility="gone" />
 
     <EditText
@@ -47,6 +48,7 @@
         android:ems="10"
         android:hint="@string/auth_pw"
         android:inputType="textPassword"
+        android:imeOptions="actionSend"
         android:visibility="gone" />
 
     <TextView
