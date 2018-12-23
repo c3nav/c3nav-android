@@ -39,4 +39,7 @@
     <string name="developer_http_user">HTTP Username</string>
     <string name="developer_http_password">HTTP Password</string>
     <string name="current_location_request_failed">Current location can\'t  be determined.</string>
+    <string name="wifi_locating_disabled_message">WiFi location is disabled in settings, you have activate it to use this feature.</string>
+    <string name="wifi_locating_disabled_ok">Settings</string>
+    <string name="wifi_locating_disabled_cancel">Cancel</string>
 </resources>

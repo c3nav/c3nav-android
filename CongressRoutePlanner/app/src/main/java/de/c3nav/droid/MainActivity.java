@@ -749,7 +749,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     protected boolean checkLocationPermission(boolean requestPermission, boolean ignoreCache) {
-        if (!settingUseWifiLocating && !requestPermission) return false;
+        if (!settingUseWifiLocating) {
+            if (requestPermission) {
+                new WifiLocationDisabledDialog().show(getSupportFragmentManager(), null);
+            } else {
+                return false;
+            }
+        }
+
+
         if (ignoreCache || locationPermissionCache == null) {
             int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
                     Manifest.permission.ACCESS_FINE_LOCATION);
