@@ -53,6 +53,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
+import android.view.ViewManager;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.HttpAuthHandler;
@@ -595,7 +596,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     protected void unloadSplashVideo() {
-        logoAnimView.setVideoPath("");
+        if (logoAnimView != null) {
+            ((ViewManager) logoAnimView.getParent()).removeView(logoAnimView);
+            logoAnimView = null;
+        }
     }
 
     protected void skipSplash() {
