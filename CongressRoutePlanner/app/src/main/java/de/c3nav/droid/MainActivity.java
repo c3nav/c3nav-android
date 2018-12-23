@@ -47,6 +47,8 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -956,14 +958,18 @@ public class MainActivity extends AppCompatActivity
                     hasChangeSet = user_data.optBoolean("has_changeset");
                     editorChangesLink.setEnabled(hasChangeSet);
 
+                    boolean directEditing = user_data.optBoolean("direct_editing");
                     String changesCountDisplay = user_data.optString("changes_count_display");
-                    editorChangesLink.setTitle(changesCountDisplay);
+                    SpannableString changesCountDisplaySpann = new SpannableString(user_data.optString("changes_count_display"));
+                    if (directEditing)
+                        changesCountDisplaySpann.setSpan(new ForegroundColorSpan(ContextCompat.getColor(getApplicationContext(), R.color.colorWarning)), 0, changesCountDisplay.length(), 0);
+                    editorChangesLink.setTitle(changesCountDisplaySpann);
+                    editorChangesLink.setIcon(directEditing ? R.drawable.ic_assignment_turned_in : R.drawable.ic_assignment);
+
                     editorDashboardLink.setVisible(loggedIn);
                     navigationMenu.setGroupVisible(R.id.editorNav, !changesCountDisplay.isEmpty());
                     MainActivity.this.setInEditor(!changesCountDisplay.isEmpty());
 
-                    boolean directEditing = user_data.optBoolean("direct_editing");
-                    editorChangesLink.setIcon(directEditing ? R.drawable.ic_assignment_turned_in : R.drawable.ic_assignment);
 
                 }
             });
