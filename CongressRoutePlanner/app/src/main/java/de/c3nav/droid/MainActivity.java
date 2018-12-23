@@ -620,6 +620,7 @@ public class MainActivity extends AppCompatActivity
         splashScreenDone = true;
         splashScreen.setVisibility(View.GONE);
         unloadSplashVideo();
+        maybeShowLoginScreen();
     }
 
     protected void showLogoScreen() {
