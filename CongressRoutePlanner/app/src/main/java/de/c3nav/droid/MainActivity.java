@@ -209,10 +209,10 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public boolean onNavigationItemSelected(MenuItem item) {
                         Intent browserIntent;
+                        Uri uri;
                         mDrawerLayout.closeDrawers();
                         switch (item.getItemId()) {
                             case R.id.accountLink:
-                                Uri uri;
                                 if (loggedIn) {
                                     uri = MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/account/").build();
                                 } else {
@@ -249,7 +249,8 @@ public class MainActivity extends AppCompatActivity
                                 startActivity(browserIntent);
                                 return true;
                             case R.id.aboutLink:
-                                webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/about/").build().toString());
+                                uri = MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/about/").build();
+                                MainActivity.this.evaluateJavascript("window.openInModal ? openInModal('" + uri.toString() + "') : window.location='" + uri.toString() + "';");
                                 return true;
                             case R.id.settingsButton:
                                 Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
