@@ -590,6 +590,7 @@ public class MainActivity extends AppCompatActivity
                     mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
                     splashScreenDone = true;
                     unloadSplashVideo();
+                    checkLocationPermission();
                 }
             });
             splashScreen.setVisibility(View.GONE);
@@ -621,6 +622,7 @@ public class MainActivity extends AppCompatActivity
         splashScreen.setVisibility(View.GONE);
         unloadSplashVideo();
         maybeShowLoginScreen();
+        checkLocationPermission();
     }
 
     protected void showLogoScreen() {
@@ -795,7 +797,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (!locationPermissionCache.booleanValue()) {
-            if (requestPermission || !locationPermissionRequested) {
+            if (requestPermission) {
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         PERM_REQUEST);
