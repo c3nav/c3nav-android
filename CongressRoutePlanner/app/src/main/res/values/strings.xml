@@ -15,6 +15,7 @@
     <string name="auth_pw">Password</string>
     <string name="auth_title">Please be patient, c3nav is not yet available for the general public.</string>
     <string name="auth_login">Login</string>
+    <string name="auth_error">Invalid username or password</string>
     <string name="url_outside_message">Warning, this link leads to a page outside of c3nav: %1$s</string>
     <string name="url_outside_ok">Continue</string>
     <string name="url_outside_cancel">Cancel</string>

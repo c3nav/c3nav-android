@@ -685,7 +685,7 @@ public class MainActivity extends AppCompatActivity
     protected void maybeShowLoginScreen() {
         if (httpAuthNeeded && (splashScreenDone || logoAnimFinished)) {
             if (loginScreenIsActive) {
-                showLoginScreen("ERROR");
+                showLoginScreen(R.string.auth_error);
             } else {
                 showLoginScreen();
             }
