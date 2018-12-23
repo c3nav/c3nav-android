@@ -35,6 +35,7 @@ import android.support.transition.Slide;
 import android.support.transition.Transition;
 import android.support.transition.TransitionManager;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.pm.ShortcutInfoCompat;
 import android.support.v4.content.pm.ShortcutManagerCompat;
@@ -248,7 +249,11 @@ public class MainActivity extends AppCompatActivity
                                 return true;
                             case R.id.settingsButton:
                                 Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
-                                startActivityForResult(settingsIntent, SETTINGS_REQUEST);
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                    ActivityCompat.startActivityForResult(MainActivity.this, settingsIntent, SETTINGS_REQUEST, ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this).toBundle());
+                                } else {
+                                    startActivityForResult(settingsIntent, SETTINGS_REQUEST);
+                                }
                             default:
                                 return false;
                         }

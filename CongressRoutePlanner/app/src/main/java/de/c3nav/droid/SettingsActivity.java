@@ -2,6 +2,7 @@ package de.c3nav.droid;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -42,7 +43,11 @@ public class SettingsActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case android.R.id.home:
                 setResult(Activity.RESULT_OK);
-                finish();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    finishAfterTransition();
+                } else {
+                    finish();
+                }
                 break;
         }
         return super.onOptionsItemSelected(item);
