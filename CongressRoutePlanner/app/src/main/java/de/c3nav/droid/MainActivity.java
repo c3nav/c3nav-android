@@ -236,7 +236,7 @@ public class MainActivity extends AppCompatActivity
                                 webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/editor/user/").build().toString());
                                 return true;
                             case R.id.mapLink:
-                                webView.loadUrl(BuildConfig.WEB_URL);
+                                webView.loadUrl(instanceBaseUrl.toString());
                                 return true;
                             case R.id.editorLink:
                                 webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/editor/").build().toString());
@@ -1091,7 +1091,7 @@ public class MainActivity extends AppCompatActivity
                 startActivity(Intent.createChooser(i, getString(R.string.share)));
                 return true;
             case R.id.refresh:
-                webView.loadUrl(BuildConfig.WEB_URL);
+                webView.loadUrl(instanceBaseUrl.toString());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
