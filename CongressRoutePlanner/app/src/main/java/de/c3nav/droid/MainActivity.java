@@ -181,7 +181,7 @@ public class MainActivity extends AppCompatActivity
         Set<String> intentCategories = intent.getCategories();
         boolean activityStartedFromLauncher = Intent.ACTION_MAIN.equals(intent.getAction())
                 && intentCategories != null && intentCategories.contains(Intent.CATEGORY_LAUNCHER);
-        boolean activityStartedFromURLFiler = Intent.ACTION_VIEW.equals(intent.getAction())
+        boolean activityStartedFromURLHandler = Intent.ACTION_VIEW.equals(intent.getAction())
                 && intentCategories != null && (
                         intentCategories.contains(Intent.CATEGORY_DEFAULT) ||
                         intentCategories.contains(Intent.CATEGORY_BROWSABLE) );
