@@ -100,6 +100,10 @@ public class MainActivity extends AppCompatActivity
     public static final int PERM_REQUEST = 1;
     public final static int SETTINGS_REQUEST = 2;
 
+    //Activity State Keys
+    public static final String STATE_SPLASHSCREEN = "splashScreenState";
+    public static final String STATE_URI = "urlState";
+
     private WifiManager wifiManager;
     private PowerManager powerManager;
     private DrawerLayout mDrawerLayout;
@@ -166,6 +170,10 @@ public class MainActivity extends AppCompatActivity
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (savedInstanceState != null) {
+            splashScreenDone = savedInstanceState.getBoolean(STATE_SPLASHSCREEN, false);
+        }
 
         instanceBaseUrl = Uri.parse(BuildConfig.WEB_URL);
 
@@ -315,7 +323,7 @@ public class MainActivity extends AppCompatActivity
 
         powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
 
-        if (activityStartedFromLauncher) {
+        if (!splashScreenDone && activityStartedFromLauncher) {
             mDrawerLayout.closeDrawers();
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             showSplash();
@@ -439,6 +447,11 @@ public class MainActivity extends AppCompatActivity
             mobileClient.setCurrentLocationRequested(true);
         } else if (intent.getAction().equals(ACTION_EDITOR)) {
             url_to_call = instanceBaseUrl.buildUpon().appendPath("editor").build().toString();
+        } else if (savedInstanceState != null && savedInstanceState.getString(STATE_URI) != null) {
+            Uri savedUri = Uri.parse(savedInstanceState.getString(STATE_URI));
+            if (savedUri.getHost().equals(instanceBaseUrl.getHost())) {
+                url_to_call = savedUri.toString();
+            }
         } else if (data != null) {
             Uri.Builder tmp_uri = data.buildUpon();
             tmp_uri.scheme("https");
@@ -712,6 +725,13 @@ public class MainActivity extends AppCompatActivity
         } else {
             hideLoginScreen();
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putBoolean(STATE_SPLASHSCREEN, splashScreenDone);
+        savedInstanceState.putString(STATE_URI, webView.getUrl());
+        super.onSaveInstanceState(savedInstanceState);
     }
 
     @Override
