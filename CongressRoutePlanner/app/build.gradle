@@ -15,7 +15,7 @@ android {
         targetSdkVersion 29
         versionCode generateVersionCode()
         versionName generateVersionName()
-        buildConfigField "String", "WEB_URL", "\"https://35c3.c3nav.de\""
+        buildConfigField "String", "WEB_URL", "\"https://36c3.c3nav.de\""
     }
     signingConfigs {
         release {

@@ -944,7 +944,7 @@ public class MainActivity extends AppCompatActivity
             final ShortcutInfoCompat shortcutInfo = new ShortcutInfoCompat.Builder(getApplicationContext(), url)
                     .setShortLabel(title)
                     .setLongLabel(title)
-                    .setIcon(IconCompat.createWithResource(getApplicationContext(), R.mipmap.ic_launcher_35c3))
+                    .setIcon(IconCompat.createWithResource(getApplicationContext(), R.mipmap.ic_launcher_36c3))
                     .setIntent(shortcutIntent)
                     .build();
 
