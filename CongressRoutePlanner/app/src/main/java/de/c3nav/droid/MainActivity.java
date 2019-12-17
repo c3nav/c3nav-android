@@ -629,18 +629,23 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    protected void skipSplash() {
+    protected void skipSplash(boolean checkLogin) {
         mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
         splashScreenDone = true;
         splashScreen.setVisibility(View.GONE);
         unloadSplashVideo();
-        maybeShowLoginScreen();
+        if (checkLogin) maybeShowLoginScreen();
         checkLocationPermission();
+    }
+
+    protected void skipSplash() {
+        skipSplash(true);
     }
 
     protected void showLogoScreen() {
         if (!splashScreenDone) {
-            skipSplash();
+            logoScreen.setVisibility(View.VISIBLE);
+            skipSplash(false);
         } else if (logoScreenIsVisible || loginScreenIsActive) {
             TransitionManager.go(new Scene((ViewGroup) logoScreen.getParent()), new AutoTransition());
         } else {
