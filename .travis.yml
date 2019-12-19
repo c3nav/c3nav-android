@@ -19,6 +19,8 @@ before_install:
 script:
     - cd CongressRoutePlanner
     - ./gradlew lintDebug assembleDebug
+    - export apk_version=$(${ANDROID_HOME}/build-tools/29.0.2/aapt dump badging app/build/outputs/apk/release/app-release.apk | head -n 1 | sed "s/.*versionCode='\([0-9]*\?\)' versionName='\([0-9.]*\?\)' .*/\2:\1/")
+    - if [[ -n "$TRAVIS_TAG" && "$(cat ../current_version)" != "$apk_version" ]]; then echo "current_version file doesn't match apk version $apk_version"; exit 1; fi
 
 before_deploy:
     - cd "$TRAVIS_BUILD_DIR"
