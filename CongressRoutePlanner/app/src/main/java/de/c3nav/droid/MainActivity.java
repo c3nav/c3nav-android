@@ -158,6 +158,7 @@ public class MainActivity extends AppCompatActivity
     private boolean settingKeepOnTop = true;
     private boolean settingKeepScreenOn = true;
     private boolean settingUseWifiLocating = true;
+    private Integer settingWifiScanRate = 30;
     private boolean settingDeveloperModeEnabled = false;
     private String settingDeveloperInstanceUrl = "";
     private String settingDeveloperHttpUser = null;
@@ -486,6 +487,8 @@ public class MainActivity extends AppCompatActivity
             }
             MainActivity.this.evaluateJavascript("nearby_stations_available();");
         }
+
+        settingWifiScanRate = Integer.parseInt(sharedPrefs.getString(getString(R.string.wifi_scan_rate_key), "30"));
 
         setWindowFlags();
 
@@ -1060,6 +1063,11 @@ public class MainActivity extends AppCompatActivity
         @JavascriptInterface
         public void currentLocationRequesteFailed() {
             Toast.makeText(MainActivity.this, R.string.current_location_request_failed, Toast.LENGTH_SHORT).show();
+        }
+
+        @JavascriptInterface
+        public int getWifiScanRate() {
+            return Integer.parseInt(sharedPrefs.getString(getString(R.string.wifi_scan_rate_key), "30"));
         }
     }
 

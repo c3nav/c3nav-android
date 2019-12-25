@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="location_permission_requested_key">locationPermissionRequested</string>
-    <string name="keep_on_top_key">keepOnTop</string>
-    <string name="keep_screen_on_key">keepScreenOn</string>
-    <string name="use_wifi_locating_key">useWifiLocating</string>
-    <string name="developer_settings_key">developerSettings</string>
-    <string name="developer_mode_enabled_key">developerModeEnabled</string>
-    <string name="developer_instance_url_key">developerInstanceUrl</string>
-    <string name="developer_http_user_key">developerHttpUser</string>
-    <string name="developer_http_password_key">developerHttpPassword</string>
+    <string name="location_permission_requested_key" translatable="false">locationPermissionRequested</string>
+    <string name="keep_on_top_key" translatable="false">keepOnTop</string>
+    <string name="keep_screen_on_key" translatable="false">keepScreenOn</string>
+    <string name="use_wifi_locating_key" translatable="false">useWifiLocating</string>
+    <string name="wifi_scan_rate_key" translatable="false">wifiScanRate</string>
+    <string name="developer_settings_key" translatable="false">developerSettings</string>
+    <string name="developer_mode_enabled_key" translatable="false">developerModeEnabled</string>
+    <string name="developer_instance_url_key" translatable="false">developerInstanceUrl</string>
+    <string name="developer_http_user_key" translatable="false">developerHttpUser</string>
+    <string name="developer_http_password_key" translatable="false">developerHttpPassword</string>
 </resources>
