@@ -220,57 +220,58 @@ public class MainActivity extends AppCompatActivity
                         Intent browserIntent;
                         Uri uri;
                         mDrawerLayout.closeDrawers();
-                        switch (item.getItemId()) {
-                            case R.id.accountLink:
-                                if (loggedIn) {
-                                    uri = MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/account/").build();
-                                } else {
-                                    uri = MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/login")
-                                            .appendQueryParameter("next", Uri.parse(webView.getUrl()).getPath()).build();
-                                }
-                                MainActivity.this.evaluateJavascript("window.openInModal ? openInModal('" + uri.toString() + "') : window.location='" + uri.toString() + "';");
-                                return true;
-                            case R.id.editorChangesLink:
-                                webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/editor/changeset/").build().toString());
-                                return true;
-                            case R.id.editorDashboardLink:
-                                webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/editor/user/").build().toString());
-                                return true;
-                            case R.id.mapLink:
-                                webView.loadUrl(instanceBaseUrl.toString());
-                                return true;
-                            case R.id.editorLink:
-                                webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/editor/").build().toString());
-                                return true;
-                            case R.id.controlPanelLink:
-                                webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/control/").build().toString());
-                                return true;
-                            case R.id.apiLink:
-                                browserIntent = new Intent(Intent.ACTION_VIEW, MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/api/").build());
-                                startActivity(browserIntent);
-                                return true;
-                            case R.id.twitterLink:
-                                browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/c3nav/"));
-                                startActivity(browserIntent);
-                                return true;
-                            case R.id.githubLink:
-                                browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/c3nav/"));
-                                startActivity(browserIntent);
-                                return true;
-                            case R.id.aboutLink:
-                                uri = MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/about/").build();
-                                MainActivity.this.evaluateJavascript("window.openInModal ? openInModal('" + uri.toString() + "') : window.location='" + uri.toString() + "';");
-                                return true;
-                            case R.id.settingsButton:
-                                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                    ActivityCompat.startActivityForResult(MainActivity.this, settingsIntent, SETTINGS_REQUEST, ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this).toBundle());
-                                } else {
-                                    startActivityForResult(settingsIntent, SETTINGS_REQUEST);
-                                }
-                            default:
-                                return false;
+                        int itemId = item.getItemId();
+                        if (itemId == R.id.accountLink) {
+                            if (loggedIn) {
+                                uri = MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/account/").build();
+                            } else {
+                                uri = MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/login")
+                                        .appendQueryParameter("next", Uri.parse(webView.getUrl()).getPath()).build();
+                            }
+                            MainActivity.this.evaluateJavascript("window.openInModal ? openInModal('" + uri.toString() + "') : window.location='" + uri.toString() + "';");
+                            return true;
+                        } else if (itemId == R.id.editorChangesLink) {
+                            webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/editor/changeset/").build().toString());
+                            return true;
+                        } else if (itemId == R.id.editorDashboardLink) {
+                            webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/editor/user/").build().toString());
+                            return true;
+                        } else if (itemId == R.id.mapLink) {
+                            webView.loadUrl(instanceBaseUrl.toString());
+                            return true;
+                        } else if (itemId == R.id.editorLink) {
+                            webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/editor/").build().toString());
+                            return true;
+                        } else if (itemId == R.id.controlPanelLink) {
+                            webView.loadUrl(MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/control/").build().toString());
+                            return true;
+                        } else if (itemId == R.id.apiLink) {
+                            browserIntent = new Intent(Intent.ACTION_VIEW, MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/api/").build());
+                            startActivity(browserIntent);
+                            return true;
+                        } else if (itemId == R.id.twitterLink) {
+                            browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/c3nav/"));
+                            startActivity(browserIntent);
+                            return true;
+                        } else if (itemId == R.id.githubLink) {
+                            browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/c3nav/"));
+                            startActivity(browserIntent);
+                            return true;
+                        } else if (itemId == R.id.aboutLink) {
+                            uri = MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/about/").build();
+                            MainActivity.this.evaluateJavascript("window.openInModal ? openInModal('" + uri.toString() + "') : window.location='" + uri.toString() + "';");
+                            return true;
+                        } else if (itemId == R.id.settingsButton) {
+                            Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                ActivityCompat.startActivityForResult(MainActivity.this, settingsIntent, SETTINGS_REQUEST, ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this).toBundle());
+                            } else {
+                                startActivityForResult(settingsIntent, SETTINGS_REQUEST);
+                            }
+
+                            return false;
                         }
+                        return false;
                     }
                 });
 
@@ -1092,23 +1093,22 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                mDrawerLayout.openDrawer(GravityCompat.START);
-                return true;
-            case R.id.share:
-                Intent i = new Intent(Intent.ACTION_SEND);
-                i.setType("text/plain");
-                i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name));
-                i.putExtra(Intent.EXTRA_TEXT, webView.getUrl());
-                startActivity(Intent.createChooser(i, getString(R.string.share)));
-                return true;
-            case R.id.refresh:
-                webView.loadUrl(instanceBaseUrl.toString());
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        int itemId = item.getItemId();
+        if (itemId == android.R.id.home) {
+            mDrawerLayout.openDrawer(GravityCompat.START);
+            return true;
+        } else if (itemId == R.id.share) {
+            Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("text/plain");
+            i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name));
+            i.putExtra(Intent.EXTRA_TEXT, webView.getUrl());
+            startActivity(Intent.createChooser(i, getString(R.string.share)));
+            return true;
+        } else if (itemId == R.id.refresh) {
+            webView.loadUrl(instanceBaseUrl.toString());
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     class WifiReceiver extends BroadcastReceiver {
