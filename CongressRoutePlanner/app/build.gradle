@@ -6,13 +6,14 @@ ext.versionPatch = 1
 ext.minimumSdkVersion = 14
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion '29.0.2'
+    namespace = "de.c3nav.droid"
+    compileSdk = 34
+    buildToolsVersion = "34.0.0"
 
     defaultConfig {
         applicationId "de.c3nav.droid"
         minSdkVersion project.ext.minimumSdkVersion
-        targetSdkVersion 29
+        targetSdkVersion 34
         versionCode generateVersionCode()
         versionName generateVersionName()
         buildConfigField "String", "WEB_URL", "\"https://36c3.c3nav.de\""
@@ -29,15 +30,16 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            zipAlignEnabled true
             signingConfig signingConfigs.release
         }
         debug {
             debuggable true
             applicationIdSuffix ".debug"
             versionNameSuffix "-debug"
-            zipAlignEnabled true
         }
+    }
+    buildFeatures {
+        buildConfig = true
     }
     lintOptions {
         disable 'AddJavascriptInterface', 'SetJavaScriptEnabled'
