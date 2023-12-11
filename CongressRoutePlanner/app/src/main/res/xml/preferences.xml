@@ -19,13 +19,6 @@
             android:key="@string/use_wifi_locating_key"
             android:summary="@string/use_wifi_locating_summary"
             android:title="@string/use_wifi_locating" />
-        <ListPreference
-            android:defaultValue="30"
-            android:entries="@array/wifiScanRate_names_array"
-            android:entryValues="@array/wifiScanRate_values_array"
-            android:key="@string/wifi_scan_rate_key"
-            android:title="@string/wifi_scan_rate"
-            android:summary="@string/wifi_scan_rate_summary" />
 
     </PreferenceCategory>
 

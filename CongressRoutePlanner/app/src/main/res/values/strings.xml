@@ -35,8 +35,6 @@
     <string name="keep_screen_on_summary">Stay awake and don\'t lock screen during WiFi measurement</string>
     <string name="use_wifi_locating">Wifi-based location</string>
     <string name="use_wifi_locating_summary">Use Wifi-based location to get you current position</string>
-    <string name="wifi_scan_rate">Wifi scan rate</string>
-    <string name="wifi_scan_rate_summary">Wifi scan rate for Wifi-based location</string>
     <string name="developer_mode_enabled">Developer Mode</string>
     <string name="developer_instance_url">Instance URL Override</string>
     <string name="developer_http_user">HTTP Username</string>

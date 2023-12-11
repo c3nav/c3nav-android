@@ -44,6 +44,4 @@
     <string name="wifi_locating_disabled_message">WLAN-basierte Ortung ist deaktiviert, um diese Funktion zu nutzen must du sie einschalten.</string>
     <string name="wifi_locating_disabled_ok">Einstellungen</string>
     <string name="wifi_locating_disabled_cancel">Abbrechen</string>
-    <string name="wifi_scan_rate">WLAN Scanrate</string>
-    <string name="wifi_scan_rate_summary">WLAN Scanrate für WLAN-basierte Ortung</string>
 </resources>
