@@ -18,17 +18,25 @@ import android.graphics.drawable.Icon;
 import android.media.MediaPlayer;
 import android.net.ParseException;
 import android.net.Uri;
+import android.net.http.SslError;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.net.wifi.rtt.RangingRequest;
+import android.net.wifi.rtt.RangingResult;
+import android.net.wifi.rtt.RangingResultCallback;
+import android.net.wifi.rtt.WifiRttManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+
 import com.google.android.material.navigation.NavigationView;
+
 import androidx.transition.AutoTransition;
 import androidx.transition.Scene;
 import androidx.transition.Slide;
@@ -47,6 +55,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
@@ -64,6 +73,7 @@ import android.webkit.CookieManager;
 import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
 import android.webkit.JsResult;
+import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -116,6 +126,7 @@ public class MainActivity extends AppCompatActivity
     private boolean locationPermissionRequested;
     private Boolean locationPermissionCache = null;
     private WifiReceiver wifiReceiver;
+    private RttStateReceiver rttStateReceiver;
     protected CustomSwipeToRefresh swipeLayout;
 
     private LinearLayout splashScreen;
@@ -192,8 +203,8 @@ public class MainActivity extends AppCompatActivity
                 && intentCategories != null && intentCategories.contains(Intent.CATEGORY_LAUNCHER);
         boolean activityStartedFromURLHandler = Intent.ACTION_VIEW.equals(intent.getAction())
                 && intentCategories != null && (
-                        intentCategories.contains(Intent.CATEGORY_DEFAULT) ||
-                        intentCategories.contains(Intent.CATEGORY_BROWSABLE) );
+                intentCategories.contains(Intent.CATEGORY_DEFAULT) ||
+                        intentCategories.contains(Intent.CATEGORY_BROWSABLE));
 
         Context context = getApplicationContext();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -327,6 +338,7 @@ public class MainActivity extends AppCompatActivity
 
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiReceiver = new WifiReceiver();
+        rttStateReceiver = new RttStateReceiver();
 
         powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
 
@@ -341,12 +353,12 @@ public class MainActivity extends AppCompatActivity
         swipeLayout.setColorSchemeResources(R.color.colorPrimary);
         swipeLayout.setEnabled(true);
         swipeLayout.setOnRefreshListener(
-            new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    webView.reload();
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        webView.reload();
+                    }
                 }
-            }
         );
 
         webView.getSettings().setSupportZoom(false);
@@ -411,6 +423,11 @@ public class MainActivity extends AppCompatActivity
                     lastAuthHandler = handler;
                     maybeShowLoginScreen();
                 }
+            }
+
+            @Override
+            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+                handler.proceed();
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
@@ -522,7 +539,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
                 logoAnimFinished = true;
-                if(!splashScreenDone) skipSplash();
+                if (!splashScreenDone) skipSplash();
                 return true;
             }
         });
@@ -564,7 +581,8 @@ public class MainActivity extends AppCompatActivity
             private boolean transitionEnded = false;
 
             @Override
-            public void onTransitionStart(Transition transition) { }
+            public void onTransitionStart(Transition transition) {
+            }
 
             @Override
             public void onTransitionEnd(Transition transition) {
@@ -573,17 +591,20 @@ public class MainActivity extends AppCompatActivity
             }
 
             @Override
-            public void onTransitionCancel(Transition transition) {}
+            public void onTransitionCancel(Transition transition) {
+            }
 
             @Override
-            public void onTransitionPause(Transition transition) { }
+            public void onTransitionPause(Transition transition) {
+            }
 
             @Override
-            public void onTransitionResume(Transition transition) { }
+            public void onTransitionResume(Transition transition) {
+            }
         });
 
         TransitionManager.go(new Scene((ViewGroup) splashScreen.getParent()), mySwapTransition);
-        splashScreen.setGravity(Gravity.TOP|Gravity.CENTER);
+        splashScreen.setGravity(Gravity.TOP | Gravity.CENTER);
         logoAnimView.getLayoutParams().height = (int) toolbar.getHeight();
         logoAnimView.requestLayout();
     }
@@ -593,8 +614,8 @@ public class MainActivity extends AppCompatActivity
         splashScreenFadeoutStarted = true;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             // center of the clipping circle
-            int cx = (int) swipeLayout.getWidth()/2;
-            int cy = (int) toolbar.getHeight()/2;
+            int cx = (int) swipeLayout.getWidth() / 2;
+            int cy = (int) toolbar.getHeight() / 2;
 
             // webview dimensions
             int width = swipeLayout.getWidth();
@@ -754,7 +775,10 @@ public class MainActivity extends AppCompatActivity
         Log.d("lifecycleEvents", "onResume called");
         evaluateJavascript("if (mobileclientOnResume) {mobileclientOnResume()};");
         registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        if(checkLocationPermission(false, true)) startScan();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            registerReceiver(rttStateReceiver, new IntentFilter(WifiRttManager.ACTION_WIFI_RTT_STATE_CHANGED));
+        }
+        if (checkLocationPermission(false, true)) startScan();
         if (splashScreenPaused && !splashScreenDone) {
             skipSplash();
         }
@@ -764,6 +788,7 @@ public class MainActivity extends AppCompatActivity
     protected void onPause() {
         Log.d("lifecycleEvents", "onPause called");
         unregisterReceiver(wifiReceiver);
+        unregisterReceiver(rttStateReceiver);
         if (splashScreenStarted && !splashScreenDone) {
             splashScreenPaused = true;
         }
@@ -1081,7 +1106,7 @@ public class MainActivity extends AppCompatActivity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             webView.evaluateJavascript(script, resultCallback);
         } else {
-            webView.loadUrl("javascript:"+script);
+            webView.loadUrl("javascript:" + script);
         }
     }
 
@@ -1116,52 +1141,104 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    public void doRtt(List<ScanResult> scanResults) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            RangingRequest.Builder builder = new RangingRequest.Builder();
+            for (ScanResult scanResult : scanResults) {
+                if (scanResult.is80211mcResponder()) {
+                    builder.addAccessPoint(scanResult);
+                }
+            }
+            RangingRequest req = builder.build();
+            WifiRttManager mgr = (WifiRttManager) this.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.NEARBY_WIFI_DEVICES) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //       ActivityCompat#requestPermissions
+                //       here to request the missing permissions, and then overriding
+                //       public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                //       to handle the case where the user grants the permission. See the documentation
+                //       for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            mgr.startRanging(req, WHAT THE FUCK IS A FUCKING EXECUTOR AND HOW DO I GET ONE, new RangingResultCallback() {
+
+                @Override
+                public void onRangingFailure(int code) {
+                    Log.d("rtt", String.format("ranging failure: %d", code));
+                    return;
+                }
+
+                @Override
+                public void onRangingResults(@NonNull List<RangingResult> results) {
+                    for (RangingResult result : results) {
+                        Log.d("rtt", String.format("ranging success: %s", result.toString()));
+                    }
+                }
+            });
+
+
+        }
+    }
+
+    public void onWifiScanResultsReceived(List<ScanResult> scanResults) {
+        doRtt(scanResults);
+        JSONArray ja = new JSONArray();
+        Map<String, Integer> newLevelValues = new HashMap<String, Integer>();
+        for (ScanResult result : wifiList) {
+            JSONObject jo = new JSONObject();
+            try {
+                jo.put("bssid", result.BSSID);
+                jo.put("ssid", result.SSID);
+                jo.put("level", result.level);
+                jo.put("frequency", result.frequency);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                    if (SystemClock.elapsedRealtime() - result.timestamp / 1000 > 1000) {
+                        continue;
+                    }
+                    jo.put("last", SystemClock.elapsedRealtime() - result.timestamp / 1000);
+                } else {
+                    // Workaround for older devices: If the signal level did not change
+                    // at all since the last scan, we will assume that it is a cached
+                    // value and should not be used.
+                    newLevelValues.put(result.BSSID, result.level);
+                    if (lastLevelValues.containsKey(result.BSSID) && lastLevelValues.get(result.BSSID) == result.level) {
+                        Log.d("scan result", "Discard " + result.BSSID + " because level did not change");
+                        continue;
+                    }
+                }
+                ja.put(jo);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        Log.d("scan result", ja.toString());
+        mobileClient.setNearbyStations(ja);
+        lastLevelValues = newLevelValues;
+
+        webView.post(new Runnable() {
+            @Override
+            public void run() {
+                MainActivity.this.evaluateJavascript("nearby_stations_available();");
+            }
+        });
+    }
+
+    class RttStateReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            return;
+        }
+    }
+
     class WifiReceiver extends BroadcastReceiver {
         public void onReceive(Context c, Intent intent) {
 
             if (!checkLocationPermission()) return;
 
             List<ScanResult> wifiList = wifiManager.getScanResults();
-            JSONArray ja = new JSONArray();
-            Map<String, Integer> newLevelValues = new HashMap<String, Integer>();
-            for (ScanResult result : wifiList) {
-                JSONObject jo = new JSONObject();
-                try {
-                    jo.put("bssid", result.BSSID);
-                    jo.put("ssid", result.SSID);
-                    jo.put("level", result.level);
-                    jo.put("frequency", result.frequency);
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        if (SystemClock.elapsedRealtime() - result.timestamp / 1000 > 1000) {
-                            continue;
-                        }
-                        jo.put("last", SystemClock.elapsedRealtime() - result.timestamp / 1000);
-                    } else {
-                        // Workaround for older devices: If the signal level did not change
-                        // at all since the last scan, we will assume that it is a cached
-                        // value and should not be used.
-                        newLevelValues.put(result.BSSID, result.level);
-                        if (lastLevelValues.containsKey(result.BSSID) && lastLevelValues.get(result.BSSID) == result.level) {
-                            Log.d("scan result", "Discard " + result.BSSID + " because level did not change");
-                            continue;
-                        }
-                    }
-                    ja.put(jo);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-            Log.d("scan result", ja.toString());
-            mobileClient.setNearbyStations(ja);
-            lastLevelValues = newLevelValues;
-
-            webView.post(new Runnable() {
-                @Override
-                public void run() {
-                    MainActivity.this.evaluateJavascript("nearby_stations_available();");
-                }
-            });
+            MainActivity.this.onWifiScanResultsReceived(wifiList);
         }
     }
 
@@ -1221,7 +1298,7 @@ public class MainActivity extends AppCompatActivity
         String shortLabel = getString(shortLabelRessource);
         String longLabel = (longLabelRessource != -1) ? getString(longLabelRessource) : null;
         Icon icon = Icon.createWithResource(getApplicationContext(), iconRessource);
-        return getShortcutInfo(id,shortLabel, longLabel, icon, action, data);
+        return getShortcutInfo(id, shortLabel, longLabel, icon, action, data);
     }
 
     public void updateDynamicShortcuts() {
@@ -1237,7 +1314,7 @@ public class MainActivity extends AppCompatActivity
 
         List<ShortcutInfo> installedDynamicShortcuts = shortcutManager.getDynamicShortcuts();
         Set<String> installedDynamicShortcutsIDs = new HashSet<String>();
-        Map<String,ShortcutInfo> currentDynamicShortcuts = new HashMap<String,ShortcutInfo>();
+        Map<String, ShortcutInfo> currentDynamicShortcuts = new HashMap<String, ShortcutInfo>();
 
         for (ShortcutInfo shortcutInfo : installedDynamicShortcuts) {
             installedDynamicShortcutsIDs.add(shortcutInfo.getId());
@@ -1262,7 +1339,7 @@ public class MainActivity extends AppCompatActivity
         for (ShortcutInfo shortcutInfo : installedDynamicShortcuts) {
             if (currentDynamicShortcuts.containsKey(shortcutInfo.getId()) && !currentDynamicShortcuts.get(shortcutInfo.getId()).getIntent().getAction().equals(shortcutInfo.getIntent().getAction())) {
                 Log.d("c3nav-shortcuts", "An Intend of an shortcut changed. forcing update");
-                Log.d("c3nav-shortcuts", "new:" + currentDynamicShortcuts.get(shortcutInfo.getId()).getIntent().getAction() + " old:" +shortcutInfo.getIntent().getAction());
+                Log.d("c3nav-shortcuts", "new:" + currentDynamicShortcuts.get(shortcutInfo.getId()).getIntent().getAction() + " old:" + shortcutInfo.getIntent().getAction());
                 updateForced = true;
                 break;
             }
@@ -1270,7 +1347,7 @@ public class MainActivity extends AppCompatActivity
 
         if (updateForced || !installedDynamicShortcutsIDs.equals(currentDynamicShortcuts.keySet())) {
             Log.d("c3nav-shortcuts", "DynamicShortcuts need update, updating...");
-            if(currentDynamicShortcuts.isEmpty()) {
+            if (currentDynamicShortcuts.isEmpty()) {
                 shortcutManager.removeAllDynamicShortcuts();
             } else {
                 shortcutManager.setDynamicShortcuts(new ArrayList<ShortcutInfo>(currentDynamicShortcuts.values()));
