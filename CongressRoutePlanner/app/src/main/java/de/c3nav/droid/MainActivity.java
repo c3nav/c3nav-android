@@ -1142,30 +1142,29 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void doRtt(List<ScanResult> scanResults) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             RangingRequest.Builder builder = new RangingRequest.Builder();
+            int numPeers = 0;
             for (ScanResult scanResult : scanResults) {
                 if (scanResult.is80211mcResponder()) {
                     builder.addAccessPoint(scanResult);
+                    Log.d("rtt", String.format("rtt-capable access point: %s", scanResult.BSSID));
+                    numPeers += 1;
                 }
             }
             RangingRequest req = builder.build();
             WifiRttManager mgr = (WifiRttManager) this.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.NEARBY_WIFI_DEVICES) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //       ActivityCompat#requestPermissions
-                //       here to request the missing permissions, and then overriding
-                //       public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                //       to handle the case where the user grants the permission. See the documentation
-                //       for ActivityCompat#requestPermissions for more details.
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.NEARBY_WIFI_DEVICES}, 0);
+                // TODO: we are already requesting permissions in another place, it should all happen centralised
                 return;
             }
-            mgr.startRanging(req, WHAT THE FUCK IS A FUCKING EXECUTOR AND HOW DO I GET ONE, new RangingResultCallback() {
+            Log.d("rtt", String.format("starting rtt ranging with %d peers", numPeers));
+            mgr.startRanging(req, getMainExecutor(), new RangingResultCallback() {
 
                 @Override
                 public void onRangingFailure(int code) {
-                    Log.d("rtt", String.format("ranging failure: %d", code));
+                    Log.w("rtt", String.format("ranging failure: %d", code));
                     return;
                 }
 
@@ -1184,8 +1183,8 @@ public class MainActivity extends AppCompatActivity
     public void onWifiScanResultsReceived(List<ScanResult> scanResults) {
         doRtt(scanResults);
         JSONArray ja = new JSONArray();
-        Map<String, Integer> newLevelValues = new HashMap<String, Integer>();
-        for (ScanResult result : wifiList) {
+        Map<String, Integer> newLevelValues = new HashMap<>();
+        for (ScanResult result : scanResults) {
             JSONObject jo = new JSONObject();
             try {
                 jo.put("bssid", result.BSSID);
