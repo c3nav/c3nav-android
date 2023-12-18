@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="wifiScanRate_names_array">
+        <item>5 s</item>
+        <item>10 s</item>
+        <item>15 s</item>
+        <item>20 s</item>
+        <item>25 s</item>
+        <item>30 s</item>
+        <item>40 s</item>
+        <item>50 s</item>
+        <item>60 s</item>
+    </string-array>
+    <string-array name="wifiScanRate_values_array">
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>25</item>
+        <item>30</item>
+        <item>40</item>
+        <item>50</item>
+        <item>60</item>
+    </string-array>
+</resources>
