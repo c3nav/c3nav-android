@@ -1,8 +1,10 @@
 package de.c3nav.droid;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
@@ -16,7 +18,7 @@ import androidx.preference.PreferenceFragmentCompat;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
 
-    private SharedPreferences sharePrefs;
+    private SharedPreferences sharedPrefs;
 
     public CheckBoxPreference useWifiLocating;
     private PreferenceCategory developerSettings;
@@ -31,8 +33,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         setPreferencesFromResource(R.xml.preferences, rootKey);
 
         useWifiLocating = (CheckBoxPreference)this.findPreference(getString(R.string.use_wifi_locating_key));
-        sharePrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        if (sharePrefs.getBoolean(getString(R.string.use_wifi_locating_key), true) && !checkLocationPermisson()) {
+        Context context = getContext();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            sharedPrefs = context.getSharedPreferences(PreferenceManager.getDefaultSharedPreferencesName(context), Context.MODE_PRIVATE);
+        } else {
+            sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        }
+        if (sharedPrefs.getBoolean(getString(R.string.use_wifi_locating_key), true) && !checkLocationPermisson()) {
             useWifiLocating.setChecked(false);
         }
         useWifiLocating.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {

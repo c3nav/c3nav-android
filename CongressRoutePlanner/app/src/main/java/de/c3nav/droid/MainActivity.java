@@ -195,7 +195,12 @@ public class MainActivity extends AppCompatActivity
                         intentCategories.contains(Intent.CATEGORY_DEFAULT) ||
                         intentCategories.contains(Intent.CATEGORY_BROWSABLE) );
 
-        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        Context context = getApplicationContext();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            sharedPrefs = context.getSharedPreferences(PreferenceManager.getDefaultSharedPreferencesName(context), Context.MODE_PRIVATE);
+        } else {
+            sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        }
         locationPermissionRequested = sharedPrefs.getBoolean(getString(R.string.location_permission_requested_key), false);
         if (BuildConfig.DEBUG && sharedPrefs.getBoolean(getString(R.string.developer_mode_enabled_key), false)) {
             settingDeveloperInstanceUrl = sharedPrefs.getString(getString(R.string.developer_instance_url_key), "");
