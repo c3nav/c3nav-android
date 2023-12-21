@@ -1144,6 +1144,7 @@ public class MainActivity extends AppCompatActivity
     public void doRtt(List<ScanResult> scanResults) {
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             RangingRequest.Builder builder = new RangingRequest.Builder();
+            builder.setRttBurstSize(16);
             int numPeers = 0;
             for (ScanResult scanResult : scanResults) {
                 if (scanResult.is80211mcResponder()) {
@@ -1151,6 +1152,9 @@ public class MainActivity extends AppCompatActivity
                     Log.d("rtt", String.format("rtt-capable access point: %s", scanResult.BSSID));
                     numPeers += 1;
                 }
+            }
+            if (numPeers == 0) {
+                return;
             }
             RangingRequest req = builder.build();
             WifiRttManager mgr = (WifiRttManager) this.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
