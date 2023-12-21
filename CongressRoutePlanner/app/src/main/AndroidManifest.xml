@@ -43,7 +43,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="36c3.c3nav.de"
+                    android:host="37c3.c3nav.de"
                     android:pathPrefix="/"
                     android:scheme="https" />
             </intent-filter>
