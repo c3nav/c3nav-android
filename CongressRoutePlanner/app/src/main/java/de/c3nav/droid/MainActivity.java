@@ -295,7 +295,7 @@ public class MainActivity extends AppCompatActivity
         authLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainActivity.this.handleLoginScreenSubmitt();
+                MainActivity.this.handleLoginScreenSubmit();
             }
         });
 
@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
                 if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_SEND
                         || keyEvent != null && keyEvent.getAction() == KeyEvent.ACTION_DOWN && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                    MainActivity.this.handleLoginScreenSubmitt();
+                    MainActivity.this.handleLoginScreenSubmit();
                     return true;
                 }
                 return false;
@@ -729,7 +729,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    protected void handleLoginScreenSubmitt() {
+    protected void handleLoginScreenSubmit() {
         if (lastAuthHandler != null) {
             lastAuthHandler.proceed(authUsername.getText().toString(), authPassword.getText().toString());
             lastAuthHandler = null;
