@@ -333,7 +333,8 @@ public class MainActivity extends AppCompatActivity
         if (!splashScreenDone && activityStartedFromLauncher) {
             mDrawerLayout.closeDrawers();
             mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-            showSplash();
+            //showSplash();
+            showLogoScreen();
         } else {
             skipSplash();
         }
@@ -362,7 +363,7 @@ public class MainActivity extends AppCompatActivity
                 initialPageLoaded = true;
                 Log.d("c3navWebView", "loading ended");
                 maybeEndSplash();
-                maybeHideLoginScreen();
+                maybeHideLoginOrLogoScreen();
             }
 
             @Override
@@ -669,6 +670,13 @@ public class MainActivity extends AppCompatActivity
         logoScreenIsVisible = true;
     }
 
+    protected void hideLogoScreen() {
+        TransitionManager.go(new Scene((ViewGroup) logoScreen.getParent()), new Slide(Gravity.LEFT));
+        logoScreen.setVisibility(View.GONE);
+        logoScreenMessage.setVisibility(View.GONE);
+        logoScreenIsVisible = false;
+    }
+
     protected void showLoginScreen(String message) {
         if (!logoScreenIsVisible) showLogoScreen();
         logoScreenMessage.setText(R.string.auth_title);
@@ -702,15 +710,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     protected void hideLoginScreen() {
-        TransitionManager.go(new Scene((ViewGroup) logoScreen.getParent()), new Slide(Gravity.LEFT));
-        logoScreen.setVisibility(View.GONE);
-        logoScreenMessage.setVisibility(View.GONE);
+        hideLogoScreen();
         authUsername.setVisibility(View.GONE);
         authPassword.setVisibility(View.GONE);
         authMessage.setVisibility(View.GONE);
         authLoginButton.setVisibility(View.GONE);
         loginScreenIsActive = false;
-        logoScreenIsVisible = false;
     }
 
     protected void maybeShowLoginScreen() {
@@ -723,9 +728,11 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    protected void maybeHideLoginScreen() {
+    protected void maybeHideLoginOrLogoScreen() {
         if (loginScreenIsActive && initialPageLoaded) {
             hideLoginScreen();
+        } else if (logoScreenIsVisible && initialPageLoaded) {
+            hideLogoScreen();
         }
     }
 
