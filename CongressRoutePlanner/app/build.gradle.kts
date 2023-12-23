@@ -3,7 +3,7 @@ plugins {
 }
 
 val versionMajor = 4
-val versionMinor = 1
+val versionMinor = 2
 val versionPatch = 1
 val minimumSdkVersion = 14
 
