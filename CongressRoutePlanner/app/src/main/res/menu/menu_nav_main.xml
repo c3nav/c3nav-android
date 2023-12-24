@@ -46,9 +46,9 @@
             android:icon="@drawable/ic_code"
             android:title="@string/api" />
         <item
-            android:id="@+id/twitterLink"
+            android:id="@+id/fediLink"
             android:icon="@drawable/ic_link"
-            android:title="Twitter"
+            android:title="Mastodon"
             tools:ignore="HardcodedText" />
         <item
             android:id="@+id/githubLink"
