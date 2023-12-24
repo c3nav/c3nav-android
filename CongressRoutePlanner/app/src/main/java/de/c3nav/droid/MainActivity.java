@@ -254,8 +254,8 @@ public class MainActivity extends AppCompatActivity
                             browserIntent = new Intent(Intent.ACTION_VIEW, MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/api/").build());
                             startActivity(browserIntent);
                             return true;
-                        } else if (itemId == R.id.twitterLink) {
-                            browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/c3nav/"));
+                        } else if (itemId == R.id.fediLink) {
+                            browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://chaos.social/@c3nav"));
                             startActivity(browserIntent);
                             return true;
                         } else if (itemId == R.id.githubLink) {
