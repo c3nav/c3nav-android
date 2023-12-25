@@ -26,27 +26,15 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter android:label="@string/viewc3nav">
+            <intent-filter android:label="@string/viewc3nav" android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="37c3.c3nav.de"
-                    android:pathPrefix="/"
-                    android:scheme="http" />
-            </intent-filter>
-            <intent-filter android:label="@string/viewc3nav">
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="37c3.c3nav.de"
-                    android:pathPrefix="/"
-                    android:scheme="https" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:host="37c3.c3nav.de"/>
+                <data android:pathPrefix="/"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="de.c3nav.droid.action.CURRENT_LOCATION" />
