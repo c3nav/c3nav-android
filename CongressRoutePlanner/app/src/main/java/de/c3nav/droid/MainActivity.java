@@ -870,10 +870,8 @@ public class MainActivity extends AppCompatActivity
             if (!powerManager.isInteractive()) return;
         }
         if (!hasLocationPermission()) return;
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            Log.d("c3navWifiScanner", "startScan triggered");
-            wifiManager.startScan();
-        }
+        Log.d("c3navWifiScanner", "startScan triggered");
+        wifiManager.startScan();
     }
 
     protected void setInEditor(boolean inEditor) {
