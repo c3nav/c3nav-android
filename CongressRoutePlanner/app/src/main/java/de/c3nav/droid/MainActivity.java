@@ -759,7 +759,7 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         Log.d("lifecycleEvents", "onResume called");
-        evaluateJavascript("if (mobileclientOnResume) {mobileclientOnResume()};");
+        evaluateJavascript("if (window.mobileclientOnResume) {mobileclientOnResume()};");
         registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         if(checkLocationPermission(false, true)) startScan();
         if (splashScreenPaused && !splashScreenDone) {
