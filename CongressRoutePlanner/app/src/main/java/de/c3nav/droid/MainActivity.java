@@ -1140,6 +1140,9 @@ public class MainActivity extends AppCompatActivity
                     jo.put("ssid", result.SSID);
                     jo.put("level", result.level);
                     jo.put("frequency", result.frequency);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        jo.put("supports80211mc", result.is80211mcResponder());
+                    }
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                         if (SystemClock.elapsedRealtime() - result.timestamp / 1000 > 1000) {
