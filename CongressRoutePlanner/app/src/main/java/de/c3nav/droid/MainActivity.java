@@ -1140,6 +1140,7 @@ public class MainActivity extends AppCompatActivity
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             RangingRequest.Builder builder = new RangingRequest.Builder();
             builder.setRttBurstSize(16);
+            // todo: use max peers
             int numPeers = 0;
             for (ScanResult scanResult : results) {
                 if (scanResult.is80211mcResponder()) {
@@ -1217,6 +1218,9 @@ public class MainActivity extends AppCompatActivity
                 jo.put("ssid", result.scan.SSID);
                 jo.put("rssi", result.scan.level);
                 jo.put("frequency", result.scan.frequency);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    jo.put("supports80211mc", result.scan.is80211mcResponder());
+                }
                 if (result.rtt != null) {
                     JSONObject rtt = new JSONObject();
                     rtt.put("distance_mm", result.rtt.getDistanceMm());
