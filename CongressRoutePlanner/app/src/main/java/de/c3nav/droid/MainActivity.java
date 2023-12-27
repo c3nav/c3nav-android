@@ -16,10 +16,15 @@ import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.graphics.drawable.Icon;
 import android.media.MediaPlayer;
+import android.net.MacAddress;
 import android.net.ParseException;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.net.wifi.rtt.RangingRequest;
+import android.net.wifi.rtt.RangingResult;
+import android.net.wifi.rtt.RangingResultCallback;
+import android.net.wifi.rtt.WifiRttManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -834,10 +839,10 @@ public class MainActivity extends AppCompatActivity
         if (ignoreCache || locationPermissionCache == null) {
             int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
                     Manifest.permission.ACCESS_FINE_LOCATION);
-            locationPermissionCache = new Boolean(permissionCheck == PackageManager.PERMISSION_GRANTED);
+            locationPermissionCache = permissionCheck == PackageManager.PERMISSION_GRANTED;
         }
 
-        if (!locationPermissionCache.booleanValue()) {
+        if (!locationPermissionCache) {
             if (requestPermission) {
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
@@ -861,7 +866,6 @@ public class MainActivity extends AppCompatActivity
         return checkLocationPermission(false);
     }
 
-    @SuppressWarnings("deprecation")
     protected void startScan() {
         if (!settingUseWifiLocating) return;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
@@ -1123,55 +1127,155 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    static class WifiResult {
+        public final ScanResult scan;
+        public final RangingResult rtt;
+        WifiResult(@NonNull ScanResult scan, RangingResult rtt) {
+            this.scan = scan;
+            this.rtt = rtt;
+        }
+    }
+
+    public void processWifiResults(List<ScanResult> results) {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            RangingRequest.Builder builder = new RangingRequest.Builder();
+            builder.setRttBurstSize(16);
+            int numPeers = 0;
+            for (ScanResult scanResult : results) {
+                if (scanResult.is80211mcResponder()) {
+                    builder.addAccessPoint(scanResult);
+                    Log.d("rtt", String.format("rtt-capable access point: %s", scanResult.BSSID));
+                    numPeers += 1;
+                }
+            }
+            if (numPeers == 0) {
+                processCompleteWifiResultsWithoutRtt(results);
+                return;
+            }
+            RangingRequest req = builder.build();
+            WifiRttManager mgr = (WifiRttManager) this.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.NEARBY_WIFI_DEVICES) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.NEARBY_WIFI_DEVICES}, 0);
+                // TODO: we are already requesting permissions in another place, it should all happen centralised
+
+                processCompleteWifiResultsWithoutRtt(results);
+                return;
+            }
+            Log.d("rtt", String.format("starting rtt ranging with %d peers", numPeers));
+            mgr.startRanging(req, getMainExecutor(), new RangingResultCallback() {
+
+                @Override
+                public void onRangingFailure(int code) {
+                    Log.w("rtt", String.format("ranging failure: %d", code));
+                    processCompleteWifiResultsWithoutRtt(results);
+                }
+
+                @Override
+                public void onRangingResults(@NonNull List<RangingResult> rangingResults) {
+                    Map<String, WifiResult> resultMap = new HashMap<>();
+                    for (ScanResult result : results) {
+                        resultMap.put(result.BSSID, new WifiResult(result, null));
+                    }
+                    for (RangingResult result : rangingResults) {
+                        if (result.getStatus() == RangingResult.STATUS_SUCCESS) {
+                            Log.d("rtt", String.format("ranging success: %s", result));
+                            MacAddress mac = result.getMacAddress();
+                            if (mac != null) {
+                                WifiResult entry = resultMap.get(mac.toString());
+                                if (entry != null) {
+                                    ScanResult scanResult = entry.scan;
+                                    resultMap.put(scanResult.BSSID, new WifiResult(scanResult, result));
+                                } else {
+                                    Log.w("rtt", String.format("got result for unknown mac %s", mac));
+                                }
+                            } else {
+                                Log.w("rtt", "no mac address in result");
+                            }
+
+                        } else {
+                            Log.d("rtt", String.format("ranging failure: %s", result));
+                        }
+                    }
+                    List<WifiResult> finalResults = new ArrayList<>(resultMap.size());
+                    finalResults.addAll(resultMap.values());
+                    processCompleteWifiResults(finalResults);
+                }
+            });
+
+
+        }
+    }
+
+
+    public void processCompleteWifiResults(List<WifiResult> results) {
+        JSONArray ja = new JSONArray();
+        Map<String, Integer> newLevelValues = new HashMap<String, Integer>();
+        for (WifiResult result : results) {
+            JSONObject jo = new JSONObject();
+            try {
+                jo.put("bssid", result.scan.BSSID);
+                jo.put("ssid", result.scan.SSID);
+                jo.put("level", result.scan.level);
+                jo.put("frequency", result.scan.frequency);
+                if (result.rtt != null) {
+                    JSONObject rtt = new JSONObject();
+                    rtt.put("distance_mm", result.rtt.getDistanceMm());
+                    rtt.put("distance_std_dev_mm", result.rtt.getDistanceStdDevMm());
+                    rtt.put("measurement_bandwidth", result.rtt.getMeasurementBandwidth());
+                    rtt.put("num_attempted_measurements", result.rtt.getNumAttemptedMeasurements());
+                    rtt.put("num_successful_measurements", result.rtt.getNumSuccessfulMeasurements());
+                    rtt.put("ranging_timestamp_millis", result.rtt.getRangingTimestampMillis());
+                    jo.put("rtt", rtt);
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                    if (SystemClock.elapsedRealtime() - result.scan.timestamp / 1000 > 1000) {
+                        continue;
+                    }
+                    jo.put("last", SystemClock.elapsedRealtime() - result.scan.timestamp / 1000);
+                } else {
+                    // Workaround for older devices: If the signal level did not change
+                    // at all since the last scan, we will assume that it is a cached
+                    // value and should not be used.
+                    newLevelValues.put(result.scan.BSSID, result.scan.level);
+                    if (lastLevelValues.containsKey(result.scan.BSSID)
+                            && lastLevelValues.get(result.scan.BSSID) == result.scan.level) {
+                        Log.d("scan result.scan", "Discard " + result.scan.BSSID + " because level did not change");
+                        continue;
+                    }
+                }
+                ja.put(jo);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        Log.d("scan result", ja.toString());
+        mobileClient.setNearbyStations(ja);
+        lastLevelValues = newLevelValues;
+
+        webView.post(new Runnable() {
+            @Override
+            public void run() {
+                MainActivity.this.evaluateJavascript("nearby_stations_available();");
+            }
+        });
+    }
+
+    public void processCompleteWifiResultsWithoutRtt(List<ScanResult> results) {
+        List<WifiResult> new_results = new ArrayList<>(results.size());
+        for (ScanResult result : results) {
+            new_results.add(new WifiResult(result, null));
+        }
+        processCompleteWifiResults(new_results);
+    }
+
     class WifiReceiver extends BroadcastReceiver {
         public void onReceive(Context c, Intent intent) {
 
             if (!checkLocationPermission()) return;
 
             List<ScanResult> wifiList = wifiManager.getScanResults();
-            JSONArray ja = new JSONArray();
-            Map<String, Integer> newLevelValues = new HashMap<String, Integer>();
-            for (ScanResult result : wifiList) {
-                JSONObject jo = new JSONObject();
-                try {
-                    jo.put("bssid", result.BSSID);
-                    jo.put("ssid", result.SSID);
-                    jo.put("level", result.level);
-                    jo.put("frequency", result.frequency);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        jo.put("supports80211mc", result.is80211mcResponder());
-                    }
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        if (SystemClock.elapsedRealtime() - result.timestamp / 1000 > 1000) {
-                            continue;
-                        }
-                        jo.put("last", SystemClock.elapsedRealtime() - result.timestamp / 1000);
-                    } else {
-                        // Workaround for older devices: If the signal level did not change
-                        // at all since the last scan, we will assume that it is a cached
-                        // value and should not be used.
-                        newLevelValues.put(result.BSSID, result.level);
-                        if (lastLevelValues.containsKey(result.BSSID) && lastLevelValues.get(result.BSSID) == result.level) {
-                            Log.d("scan result", "Discard " + result.BSSID + " because level did not change");
-                            continue;
-                        }
-                    }
-                    ja.put(jo);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-            Log.d("scan result", ja.toString());
-            mobileClient.setNearbyStations(ja);
-            lastLevelValues = newLevelValues;
-
-            webView.post(new Runnable() {
-                @Override
-                public void run() {
-                    MainActivity.this.evaluateJavascript("nearby_stations_available();");
-                }
-            });
+            MainActivity.this.processWifiResults(wifiList);
         }
     }
 
@@ -1189,7 +1293,6 @@ public class MainActivity extends AppCompatActivity
         setWindowFlags();
     }
 
-    @SuppressWarnings("deprecation")
     private void setWindowFlags() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1) {
             if ((settingKeepOnTop && !isInEditor()) || settingKeepScreenOn && isWifiMeasurementRunning()) {
@@ -1227,7 +1330,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @RequiresApi(Build.VERSION_CODES.N_MR1)
-    public ShortcutInfo getShortcutInfo(@NonNull String id, @NonNull int shortLabelRessource, int longLabelRessource, @NonNull int iconRessource, @NonNull String action, Uri data) {
+    public ShortcutInfo getShortcutInfo(@NonNull String id, int shortLabelRessource, int longLabelRessource, int iconRessource, @NonNull String action, Uri data) {
         String shortLabel = getString(shortLabelRessource);
         String longLabel = (longLabelRessource != -1) ? getString(longLabelRessource) : null;
         Icon icon = Icon.createWithResource(getApplicationContext(), iconRessource);
