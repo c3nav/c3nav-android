@@ -1215,7 +1215,7 @@ public class MainActivity extends AppCompatActivity
             try {
                 jo.put("bssid", result.scan.BSSID);
                 jo.put("ssid", result.scan.SSID);
-                jo.put("level", result.scan.level);
+                jo.put("rssi", result.scan.level);
                 jo.put("frequency", result.scan.frequency);
                 if (result.rtt != null) {
                     JSONObject rtt = new JSONObject();
