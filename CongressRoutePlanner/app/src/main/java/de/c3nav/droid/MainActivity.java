@@ -1138,15 +1138,23 @@ public class MainActivity extends AppCompatActivity
 
     public void processWifiResults(List<ScanResult> results) {
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            WifiRttManager mgr = (WifiRttManager) this.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
+            if (!mgr.isAvailable()) {
+                processCompleteWifiResultsWithoutRtt(results);
+                return;
+            }
             RangingRequest.Builder builder = new RangingRequest.Builder();
             builder.setRttBurstSize(16);
-            // todo: use max peers
+            // todo: use max peers more efficiently. i.e. prefer some APs over others
             int numPeers = 0;
             for (ScanResult scanResult : results) {
                 if (scanResult.is80211mcResponder()) {
                     builder.addAccessPoint(scanResult);
                     Log.d("rtt", String.format("rtt-capable access point: %s", scanResult.BSSID));
                     numPeers += 1;
+                    if (numPeers >= RangingRequest.getMaxPeers()) {
+                        break;
+                    }
                 }
             }
             if (numPeers == 0) {
@@ -1154,7 +1162,6 @@ public class MainActivity extends AppCompatActivity
                 return;
             }
             RangingRequest req = builder.build();
-            WifiRttManager mgr = (WifiRttManager) this.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.NEARBY_WIFI_DEVICES) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.NEARBY_WIFI_DEVICES}, 0);
                 // TODO: we are already requesting permissions in another place, it should all happen centralised
@@ -1202,8 +1209,8 @@ public class MainActivity extends AppCompatActivity
                     processCompleteWifiResults(finalResults);
                 }
             });
-
-
+        } else {
+            processCompleteWifiResultsWithoutRtt(results);
         }
     }
 
@@ -1233,10 +1240,10 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                    if (SystemClock.elapsedRealtime() - result.scan.timestamp / 1000 > 1000) {
+                    if (SystemClock.elapsedRealtime() - result.scan.timestamp / 1000 > 10000) {
                         continue;
                     }
-                    jo.put("last", SystemClock.elapsedRealtime() - result.scan.timestamp / 1000);
+                    jo.put("last", SystemClock.elapsedRealtime() - result.scan.timestamp / 10000);
                 } else {
                     // Workaround for older devices: If the signal level did not change
                     // at all since the last scan, we will assume that it is a cached
