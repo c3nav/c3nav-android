@@ -1137,14 +1137,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void processWifiResults(List<ScanResult> results) {
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             WifiRttManager mgr = (WifiRttManager) this.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
             if (!mgr.isAvailable()) {
                 processCompleteWifiResultsWithoutRtt(results);
                 return;
             }
             RangingRequest.Builder builder = new RangingRequest.Builder();
-            builder.setRttBurstSize(16);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                builder.setRttBurstSize(16);
+            }
             // todo: use max peers more efficiently. i.e. prefer some APs over others
             int numPeers = 0;
             for (ScanResult scanResult : results) {
@@ -1228,14 +1230,16 @@ public class MainActivity extends AppCompatActivity
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     jo.put("supports80211mc", result.scan.is80211mcResponder());
                 }
-                if (result.rtt != null) {
+                if (result.rtt != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     JSONObject rtt = new JSONObject();
                     rtt.put("distance_mm", result.rtt.getDistanceMm());
                     rtt.put("distance_std_dev_mm", result.rtt.getDistanceStdDevMm());
-                    rtt.put("measurement_bandwidth", result.rtt.getMeasurementBandwidth());
                     rtt.put("num_attempted_measurements", result.rtt.getNumAttemptedMeasurements());
                     rtt.put("num_successful_measurements", result.rtt.getNumSuccessfulMeasurements());
                     rtt.put("ranging_timestamp_millis", result.rtt.getRangingTimestampMillis());
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                        rtt.put("measurement_bandwidth", result.rtt.getMeasurementBandwidth());
+                    }
                     jo.put("rtt", rtt);
                 }
 
