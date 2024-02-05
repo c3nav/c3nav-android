@@ -5,7 +5,7 @@
     <string name="share">Teilen</string>
     <string name="refresh">Aktualisieren</string>
     <string name="shortcut_created">Eine Verknüpfung wurde erstellt</string>
-    <string name="shortcut_not_supported">Dein Launcher unterstützt leider keine Verknüfpungen.</string>
+    <string name="shortcut_not_supported">Dein Launcher unterstützt leider keine Verknüpfungen.</string>
     <string name="shortcut_control_panel_short">Control Panel</string>
     <string name="shortcut_control_panel_long">c3nav control panel Öffnen</string>
     <string name="shortcut_current_location_short">Position Anzeigen</string>
@@ -17,7 +17,7 @@
     <string name="auth_title">Wir bitten um etwas Geduld, c3nav ist noch nicht öffentlich verfügbar.</string>
     <string name="auth_login">Anmelden</string>
     <string name="auth_error">Ungültiger Nutzername oder Passwort</string>
-    <string name="url_outside_message">Achtung, dieser Link zeit auf eine seite außerhalb von c3nav: %1$s</string>
+    <string name="url_outside_message">Achtung, dieser Link zeigt auf eine Seite außerhalb von c3nav: %1$s</string>
     <string name="url_outside_ok">Fortfahren</string>
     <string name="url_outside_cancel">Abbrechen</string>
     <string name="not_logged_in">Nicht eingeloggt</string>
@@ -33,7 +33,7 @@
     <string name="keep_on_top">Im Vordergrund behalten</string>
     <string name="keep_on_top_summary">c3nav im Vordergrund behalten und über dem Lockscreen anzeigen</string>
     <string name="keep_screen_on">Wach bleiben während WLAN Messung</string>
-    <string name="keep_screen_on_summary">Wach bleiben und Bilschirm nicht sperren währen während WLAN Messung läuft</string>
+    <string name="keep_screen_on_summary">Wach bleiben und Bilschirm nicht sperren während WLAN Messung läuft</string>
     <string name="use_wifi_locating">WLAN-basierte Ortung</string>
     <string name="use_wifi_locating_summary">Nutze WLAN-basierte Ortung um deine aktuelle Postion zu bestimmen</string>
     <string name="developer_mode_enabled">Entwickler Modus</string>
@@ -41,7 +41,7 @@
     <string name="developer_http_user">HTTP Benutzername</string>
     <string name="developer_http_password">HTTP Passwort</string>
     <string name="current_location_request_failed">Aktuelle Position kann nicht bestimmt werden</string>
-    <string name="wifi_locating_disabled_message">WLAN-basierte Ortung ist deaktiviert, um diese Funktion zu nutzen must du sie einschalten.</string>
+    <string name="wifi_locating_disabled_message">WLAN-basierte Ortung ist deaktiviert. Um diese Funktion nutzen zu können, musst du sie einschalten.</string>
     <string name="wifi_locating_disabled_ok">Einstellungen</string>
     <string name="wifi_locating_disabled_cancel">Abbrechen</string>
     <string name="wifi_scan_rate">WLAN Scanrate</string>
