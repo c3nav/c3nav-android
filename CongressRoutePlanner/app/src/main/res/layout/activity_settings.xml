@@ -32,6 +32,6 @@
             android:layout_height="?attr/actionBarSize"
             android:layout_gravity="center"
             android:adjustViewBounds="true"
-            app:srcCompat="@drawable/logo" />
+            app:srcCompat="@drawable/logo_eh21" />
     </LinearLayout>
 </FrameLayout>
