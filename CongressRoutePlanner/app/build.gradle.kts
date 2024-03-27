@@ -3,8 +3,8 @@ plugins {
 }
 
 val versionMajor = 4
-val versionMinor = 2
-val versionPatch = 6
+val versionMinor = 3
+val versionPatch = 0
 val minimumSdkVersion = 14
 
 android {
