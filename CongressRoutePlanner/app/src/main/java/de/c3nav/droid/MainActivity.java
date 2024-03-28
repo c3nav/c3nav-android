@@ -31,9 +31,12 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+
 import com.google.android.material.navigation.NavigationView;
+
 import androidx.transition.AutoTransition;
 import androidx.transition.Scene;
 import androidx.transition.Slide;
@@ -52,6 +55,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
@@ -81,11 +85,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import org.altbeacon.beacon.Beacon;
+import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.BeaconParser;
+import org.altbeacon.beacon.RangeNotifier;
+import org.altbeacon.beacon.Region;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -171,6 +181,8 @@ public class MainActivity extends AppCompatActivity
 
     protected Uri instanceBaseUrl;
 
+    protected BeaconManager beaconManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppTheme);
@@ -197,8 +209,8 @@ public class MainActivity extends AppCompatActivity
                 && intentCategories != null && intentCategories.contains(Intent.CATEGORY_LAUNCHER);
         boolean activityStartedFromURLHandler = Intent.ACTION_VIEW.equals(intent.getAction())
                 && intentCategories != null && (
-                        intentCategories.contains(Intent.CATEGORY_DEFAULT) ||
-                        intentCategories.contains(Intent.CATEGORY_BROWSABLE) );
+                intentCategories.contains(Intent.CATEGORY_DEFAULT) ||
+                        intentCategories.contains(Intent.CATEGORY_BROWSABLE));
 
         Context context = getApplicationContext();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -219,6 +231,30 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
+
+
+        beaconManager = BeaconManager.getInstanceForApplication(this);
+        beaconManager.addRangeNotifier((beacons, region) -> {
+            if (beacons.isEmpty()) return;
+            JSONArray ja = new JSONArray();
+            try {
+                for (Beacon beacon : beacons) {
+                    JSONObject jo = new JSONObject();
+                    jo.put("uuid", region.getUniqueId());
+
+                    jo.put("id1", beacon.getId1().toInt());
+                    jo.put("id2", beacon.getId2().toInt());
+                    jo.put("id3", beacon.getId3().toInt());
+                    jo.put("distance", beacon.getDistance());
+                    ja.put(jo);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            mobileClient.setNearbyBeacons(ja);
+            webView.post(() -> MainActivity.this.evaluateJavascript("ibeacon_results_available();"));
+        });
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"));
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
@@ -347,12 +383,12 @@ public class MainActivity extends AppCompatActivity
         swipeLayout.setColorSchemeResources(R.color.colorPrimary);
         swipeLayout.setEnabled(true);
         swipeLayout.setOnRefreshListener(
-            new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    webView.reload();
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        webView.reload();
+                    }
                 }
-            }
         );
 
         webView.getSettings().setSupportZoom(false);
@@ -528,7 +564,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
                 logoAnimFinished = true;
-                if(!splashScreenDone) skipSplash();
+                if (!splashScreenDone) skipSplash();
                 return true;
             }
         });
@@ -570,7 +606,8 @@ public class MainActivity extends AppCompatActivity
             private boolean transitionEnded = false;
 
             @Override
-            public void onTransitionStart(Transition transition) { }
+            public void onTransitionStart(Transition transition) {
+            }
 
             @Override
             public void onTransitionEnd(Transition transition) {
@@ -579,17 +616,20 @@ public class MainActivity extends AppCompatActivity
             }
 
             @Override
-            public void onTransitionCancel(Transition transition) {}
+            public void onTransitionCancel(Transition transition) {
+            }
 
             @Override
-            public void onTransitionPause(Transition transition) { }
+            public void onTransitionPause(Transition transition) {
+            }
 
             @Override
-            public void onTransitionResume(Transition transition) { }
+            public void onTransitionResume(Transition transition) {
+            }
         });
 
         TransitionManager.go(new Scene((ViewGroup) splashScreen.getParent()), mySwapTransition);
-        splashScreen.setGravity(Gravity.TOP|Gravity.CENTER);
+        splashScreen.setGravity(Gravity.TOP | Gravity.CENTER);
         logoAnimView.getLayoutParams().height = (int) toolbar.getHeight();
         logoAnimView.requestLayout();
     }
@@ -599,8 +639,8 @@ public class MainActivity extends AppCompatActivity
         splashScreenFadeoutStarted = true;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             // center of the clipping circle
-            int cx = (int) swipeLayout.getWidth()/2;
-            int cy = (int) toolbar.getHeight()/2;
+            int cx = (int) swipeLayout.getWidth() / 2;
+            int cy = (int) toolbar.getHeight() / 2;
 
             // webview dimensions
             int width = swipeLayout.getWidth();
@@ -766,7 +806,7 @@ public class MainActivity extends AppCompatActivity
         Log.d("lifecycleEvents", "onResume called");
         evaluateJavascript("if (window.mobileclientOnResume) {mobileclientOnResume()};");
         registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        if(checkLocationPermission(false, true)) startScan();
+        if (checkLocationPermission(false, true)) startScan();
         if (splashScreenPaused && !splashScreenDone) {
             skipSplash();
         }
@@ -906,7 +946,10 @@ public class MainActivity extends AppCompatActivity
 
     class MobileClient {
         private JSONArray nearbyStations;
+        private JSONArray nearbyBeacons;
         private boolean currentLocationRequested;
+
+        private Map<String, Region> beaconRegions = new HashMap<>();
 
         @JavascriptInterface
         public String getNearbyStations() {
@@ -917,8 +960,40 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
+        @JavascriptInterface
+        public String getNearbyBeacons() {
+            if (this.nearbyStations != null) {
+                return this.nearbyBeacons.toString();
+            } else {
+                return "[]";
+            }
+        }
+
+        @JavascriptInterface
+        public void registerBeaconUuid(String uuid) {
+            if (beaconRegions.containsKey(uuid)) {
+                return;
+            }
+            Region region = new Region(uuid, null, null, null);
+            beaconRegions.put(uuid, region);
+            beaconManager.startRangingBeacons(region);
+        }
+
+        @JavascriptInterface
+        public void unregisterBeaconUuid(String uuid) {
+            Region region = beaconRegions.get(uuid);
+            if (region != null) {
+                beaconRegions.remove(uuid);
+                beaconManager.stopRangingBeacons(region);
+            }
+        }
+
         public void setNearbyStations(JSONArray nearbyStations) {
             this.nearbyStations = nearbyStations;
+        }
+
+        public void setNearbyBeacons(JSONArray nearbyBeacons) {
+            this.nearbyBeacons = nearbyBeacons;
         }
 
         @JavascriptInterface
@@ -1092,7 +1167,7 @@ public class MainActivity extends AppCompatActivity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             webView.evaluateJavascript(script, resultCallback);
         } else {
-            webView.loadUrl("javascript:"+script);
+            webView.loadUrl("javascript:" + script);
         }
     }
 
@@ -1130,6 +1205,7 @@ public class MainActivity extends AppCompatActivity
     static class WifiResult {
         public final ScanResult scan;
         public final RangingResult rtt;
+
         WifiResult(@NonNull ScanResult scan, RangingResult rtt) {
             this.scan = scan;
             this.rtt = rtt;
@@ -1349,7 +1425,7 @@ public class MainActivity extends AppCompatActivity
         String shortLabel = getString(shortLabelRessource);
         String longLabel = (longLabelRessource != -1) ? getString(longLabelRessource) : null;
         Icon icon = Icon.createWithResource(getApplicationContext(), iconRessource);
-        return getShortcutInfo(id,shortLabel, longLabel, icon, action, data);
+        return getShortcutInfo(id, shortLabel, longLabel, icon, action, data);
     }
 
     public void updateDynamicShortcuts() {
@@ -1365,7 +1441,7 @@ public class MainActivity extends AppCompatActivity
 
         List<ShortcutInfo> installedDynamicShortcuts = shortcutManager.getDynamicShortcuts();
         Set<String> installedDynamicShortcutsIDs = new HashSet<String>();
-        Map<String,ShortcutInfo> currentDynamicShortcuts = new HashMap<String,ShortcutInfo>();
+        Map<String, ShortcutInfo> currentDynamicShortcuts = new HashMap<String, ShortcutInfo>();
 
         for (ShortcutInfo shortcutInfo : installedDynamicShortcuts) {
             installedDynamicShortcutsIDs.add(shortcutInfo.getId());
@@ -1390,7 +1466,7 @@ public class MainActivity extends AppCompatActivity
         for (ShortcutInfo shortcutInfo : installedDynamicShortcuts) {
             if (currentDynamicShortcuts.containsKey(shortcutInfo.getId()) && !currentDynamicShortcuts.get(shortcutInfo.getId()).getIntent().getAction().equals(shortcutInfo.getIntent().getAction())) {
                 Log.d("c3nav-shortcuts", "An Intend of an shortcut changed. forcing update");
-                Log.d("c3nav-shortcuts", "new:" + currentDynamicShortcuts.get(shortcutInfo.getId()).getIntent().getAction() + " old:" +shortcutInfo.getIntent().getAction());
+                Log.d("c3nav-shortcuts", "new:" + currentDynamicShortcuts.get(shortcutInfo.getId()).getIntent().getAction() + " old:" + shortcutInfo.getIntent().getAction());
                 updateForced = true;
                 break;
             }
@@ -1398,7 +1474,7 @@ public class MainActivity extends AppCompatActivity
 
         if (updateForced || !installedDynamicShortcutsIDs.equals(currentDynamicShortcuts.keySet())) {
             Log.d("c3nav-shortcuts", "DynamicShortcuts need update, updating...");
-            if(currentDynamicShortcuts.isEmpty()) {
+            if (currentDynamicShortcuts.isEmpty()) {
                 shortcutManager.removeAllDynamicShortcuts();
             } else {
                 shortcutManager.setDynamicShortcuts(new ArrayList<ShortcutInfo>(currentDynamicShortcuts.values()));
