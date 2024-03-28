@@ -877,15 +877,21 @@ public class MainActivity extends AppCompatActivity
 
 
         if (ignoreCache || locationPermissionCache == null) {
-            int permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
+            int permissionCheckLocation = ContextCompat.checkSelfPermission(MainActivity.this,
                     Manifest.permission.ACCESS_FINE_LOCATION);
-            locationPermissionCache = permissionCheck == PackageManager.PERMISSION_GRANTED;
+            int permissionCheckBluetooth = ContextCompat.checkSelfPermission(MainActivity.this,
+                    Manifest.permission.BLUETOOTH_SCAN);
+            locationPermissionCache = permissionCheckLocation == PackageManager.PERMISSION_GRANTED
+                && permissionCheckBluetooth == PackageManager.PERMISSION_GRANTED;
         }
 
         if (!locationPermissionCache) {
             if (requestPermission) {
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        PERM_REQUEST);
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.BLUETOOTH_SCAN},
                         PERM_REQUEST);
                 this.setLocationPermissionRequested(true);
             }
