@@ -32,14 +32,14 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.preferences, rootKey);
 
-        useWifiLocating = (CheckBoxPreference)this.findPreference(getString(R.string.use_wifi_locating_key));
+        useWifiLocating = (CheckBoxPreference)this.findPreference(getString(R.string.use_wifi_bt_locating_key));
         Context context = getContext();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             sharedPrefs = context.getSharedPreferences(PreferenceManager.getDefaultSharedPreferencesName(context), Context.MODE_PRIVATE);
         } else {
             sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         }
-        if (sharedPrefs.getBoolean(getString(R.string.use_wifi_locating_key), true) && !checkLocationPermisson()) {
+        if (sharedPrefs.getBoolean(getString(R.string.use_wifi_bt_locating_key), true) && !checkLocationPermisson()) {
             useWifiLocating.setChecked(false);
         }
         useWifiLocating.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {

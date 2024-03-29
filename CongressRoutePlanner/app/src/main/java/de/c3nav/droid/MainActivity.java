@@ -88,15 +88,12 @@ import android.widget.VideoView;
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconManager;
 import org.altbeacon.beacon.BeaconParser;
-import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -173,7 +170,7 @@ public class MainActivity extends AppCompatActivity
     private SharedPreferences sharedPrefs;
     private boolean settingKeepOnTop = true;
     private boolean settingKeepScreenOn = true;
-    private boolean settingUseWifiLocating = true;
+    private boolean settingUseWifiAndBluetoothLocating = true;
     private Integer settingWifiScanRate = 30;
     private boolean settingDeveloperModeEnabled = false;
     private String settingDeveloperInstanceUrl = "";
@@ -245,6 +242,7 @@ public class MainActivity extends AppCompatActivity
                     jo.put("major", beacon.getId2().toInt());
                     jo.put("minor", beacon.getId3().toInt());
                     jo.put("distance", beacon.getDistance());
+                    jo.put("last_seen", beacon.getLastCycleDetectionTimestamp());
                     ja.put(jo);
                 }
             } catch (JSONException e) {
@@ -524,10 +522,10 @@ public class MainActivity extends AppCompatActivity
     protected void updateSettings() {
         settingKeepOnTop = sharedPrefs.getBoolean(getString(R.string.keep_on_top_key), true);
         settingKeepScreenOn = sharedPrefs.getBoolean(getString(R.string.keep_screen_on_key), true);
-        if (settingUseWifiLocating != sharedPrefs.getBoolean(getString(R.string.use_wifi_locating_key), true)) {
-            Log.d("c3nav-settings", "useWifiLocationSetting updated");
-            settingUseWifiLocating = sharedPrefs.getBoolean(getString(R.string.use_wifi_locating_key), true);
-            if (settingUseWifiLocating) {
+        if (settingUseWifiAndBluetoothLocating != sharedPrefs.getBoolean(getString(R.string.use_wifi_bt_locating_key), true)) {
+            Log.d("c3nav-settings", "settingUseWifiAndBluetoothLocating updated");
+            settingUseWifiAndBluetoothLocating = sharedPrefs.getBoolean(getString(R.string.use_wifi_bt_locating_key), true);
+            if (settingUseWifiAndBluetoothLocating) {
                 startScan();
             } else {
                 mobileClient.setNearbyStations(null);
@@ -839,13 +837,22 @@ public class MainActivity extends AppCompatActivity
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case PERM_REQUEST:
-                if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    permissionCache.addAll(Arrays.asList(permissions));
-                    if (!settingUseWifiLocating) {
+                Set<String> perms = new HashSet<>(permissionCache);
+                for (int i = 0; i < permissions.length; i++) {
+                    String perm = permissions[i];
+                    if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                        perms.add(perm);
+                    } else {
+                        perms.remove(perm);
+                    }
+                }
+                permissionCache = new ArrayList<>(perms);
+                if (!perms.isEmpty()) {
+                    if (!settingUseWifiAndBluetoothLocating) {
                         SharedPreferences.Editor editor = sharedPrefs.edit();
-                        editor.putBoolean(getString(R.string.use_wifi_locating_key), true);
+                        editor.putBoolean(getString(R.string.use_wifi_bt_locating_key), true);
                         editor.apply();
-                        settingUseWifiLocating = true;
+                        settingUseWifiAndBluetoothLocating = true;
                     }
                     // let the js know we have location permission now and start a single scan
                     evaluateJavascript("nearby_stations_available();");
@@ -866,7 +873,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     protected boolean checkLocationPermission(boolean requestPermission, boolean ignoreCache) {
-        if (!settingUseWifiLocating) {
+        if (!settingUseWifiAndBluetoothLocating) {
             if (requestPermission) {
                 new WifiLocationDisabledDialog().show(getSupportFragmentManager(), null);
             } else {
@@ -901,7 +908,7 @@ public class MainActivity extends AppCompatActivity
             }
             return false;
         }
-        return settingUseWifiLocating;
+        return settingUseWifiAndBluetoothLocating;
     }
 
     protected boolean checkLocationPermission(boolean requestPermission) {
@@ -917,7 +924,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     protected void startScan() {
-        if (!settingUseWifiLocating) return;
+        if (!settingUseWifiAndBluetoothLocating) return;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             if (!powerManager.isScreenOn()) return;
         } else {

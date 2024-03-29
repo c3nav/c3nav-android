@@ -3,7 +3,7 @@
     <string name="location_permission_requested_key" translatable="false">locationPermissionRequested</string>
     <string name="keep_on_top_key" translatable="false">keepOnTop</string>
     <string name="keep_screen_on_key" translatable="false">keepScreenOn</string>
-    <string name="use_wifi_locating_key" translatable="false">useWifiLocating</string>
+    <string name="use_wifi_bt_locating_key" translatable="false">useWifiAndBluetoothLocating</string>
     <string name="wifi_scan_rate_key" translatable="false">wifiScanRate</string>
     <string name="developer_settings_key" translatable="false">developerSettings</string>
     <string name="developer_mode_enabled_key" translatable="false">developerModeEnabled</string>
