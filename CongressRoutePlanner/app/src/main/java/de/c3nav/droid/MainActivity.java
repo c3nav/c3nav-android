@@ -95,6 +95,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -129,7 +130,7 @@ public class MainActivity extends AppCompatActivity
     private MobileClient mobileClient;
     private Map<String, Integer> lastLevelValues = new HashMap<>();
     private boolean locationPermissionRequested;
-    private Boolean locationPermissionCache = null;
+    private List<String> permissionCache = null;
     private WifiReceiver wifiReceiver;
     protected CustomSwipeToRefresh swipeLayout;
 
@@ -241,10 +242,8 @@ public class MainActivity extends AppCompatActivity
                 for (Beacon beacon : beacons) {
                     JSONObject jo = new JSONObject();
                     jo.put("uuid", region.getUniqueId());
-
-                    jo.put("id1", beacon.getId1().toInt());
-                    jo.put("id2", beacon.getId2().toInt());
-                    jo.put("id3", beacon.getId3().toInt());
+                    jo.put("major", beacon.getId2().toInt());
+                    jo.put("minor", beacon.getId3().toInt());
                     jo.put("distance", beacon.getDistance());
                     ja.put(jo);
                 }
@@ -483,7 +482,7 @@ public class MainActivity extends AppCompatActivity
         });
 
         updateSettings();
-        hasLocationPermission(); //initialize locationPermissionCache
+        hasLocationPermission();
         cachedUserPermissions = new CachedUserPermissions();
         updateDynamicShortcuts();
 
@@ -841,7 +840,7 @@ public class MainActivity extends AppCompatActivity
         switch (requestCode) {
             case PERM_REQUEST:
                 if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    locationPermissionCache = Boolean.TRUE;
+                    permissionCache.addAll(Arrays.asList(permissions));
                     if (!settingUseWifiLocating) {
                         SharedPreferences.Editor editor = sharedPrefs.edit();
                         editor.putBoolean(getString(R.string.use_wifi_locating_key), true);
@@ -875,25 +874,30 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-
-        if (ignoreCache || locationPermissionCache == null) {
-            int permissionCheckLocation = ContextCompat.checkSelfPermission(MainActivity.this,
-                    Manifest.permission.ACCESS_FINE_LOCATION);
-            int permissionCheckBluetooth = ContextCompat.checkSelfPermission(MainActivity.this,
-                    Manifest.permission.BLUETOOTH_SCAN);
-            locationPermissionCache = permissionCheckLocation == PackageManager.PERMISSION_GRANTED
-                && permissionCheckBluetooth == PackageManager.PERMISSION_GRANTED;
+        List<String> permissionsToRequest = new ArrayList<>();
+        permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissionsToRequest.add(Manifest.permission.BLUETOOTH_SCAN);
         }
 
-        if (!locationPermissionCache) {
+        List<String> missingPermissions = new ArrayList<>();
+        if (ignoreCache || permissionCache == null) {
+            List<String> grantedPermissions = new ArrayList<>();
+            for (String perm : permissionsToRequest) {
+                int res = ContextCompat.checkSelfPermission(MainActivity.this, perm);
+                if (res == PackageManager.PERMISSION_GRANTED) {
+                    grantedPermissions.add(perm);
+                } else {
+                    missingPermissions.add(perm);
+                }
+            }
+            permissionCache = grantedPermissions;
+        }
+        if (!missingPermissions.isEmpty()) {
             if (requestPermission) {
                 ActivityCompat.requestPermissions(MainActivity.this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        missingPermissions.toArray(new String[0]),
                         PERM_REQUEST);
-                ActivityCompat.requestPermissions(MainActivity.this,
-                        new String[]{Manifest.permission.BLUETOOTH_SCAN},
-                        PERM_REQUEST);
-                this.setLocationPermissionRequested(true);
             }
             return false;
         }
@@ -980,6 +984,7 @@ public class MainActivity extends AppCompatActivity
             if (beaconRegions.containsKey(uuid)) {
                 return;
             }
+            checkLocationPermission(true);
             Region region = new Region(uuid, null, null, null);
             beaconRegions.put(uuid, region);
             beaconManager.startRangingBeacons(region);
