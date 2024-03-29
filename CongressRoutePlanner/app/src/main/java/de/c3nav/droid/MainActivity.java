@@ -1221,8 +1221,12 @@ public class MainActivity extends AppCompatActivity
     public void processWifiResults(List<ScanResult> results) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             WifiRttManager mgr = (WifiRttManager) this.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
-            if (!mgr.isAvailable()) {
-                processCompleteWifiResultsWithoutRtt(results);
+            try {
+                if (!mgr.isAvailable()) {
+                    processCompleteWifiResultsWithoutRtt(results);
+                    return;
+                }
+            } catch (NullPointerException e) {
                 return;
             }
             RangingRequest.Builder builder = new RangingRequest.Builder();
