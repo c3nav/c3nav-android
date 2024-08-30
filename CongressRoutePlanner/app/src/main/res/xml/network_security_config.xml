@@ -3,7 +3,7 @@
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">c3nav.de</domain>
         <pin-set>
-            <pin digest="SHA-256">jQJTbIh0grw0/1TkHSumWb+Fs0Ggogr621gT3PvPKG0=</pin>
+            <pin digest="SHA-256">bdrBhpj38ffhxpubzkINl0rG+UyossdhcBYj+Zx2fcc=</pin>
         </pin-set>
     </domain-config>
 </network-security-config>
