@@ -268,8 +268,10 @@ public class MainActivity extends AppCompatActivity
                             if (loggedIn) {
                                 uri = MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/account/").build();
                             } else {
-                                uri = MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/login")
-                                        .appendQueryParameter("next", Uri.parse(webView.getUrl()).getPath()).build();
+                                uri = MainActivity.this.instanceBaseUrl.buildUpon().encodedPath("/login").build();
+
+                                if (webView.getUrl() != null)
+                                    uri = uri.buildUpon().appendQueryParameter("next", Uri.parse(webView.getUrl()).getPath()).build();
                             }
                             MainActivity.this.evaluateJavascript("window.openInModal ? openInModal('" + uri.toString() + "') : window.location='" + uri.toString() + "';");
                             return true;

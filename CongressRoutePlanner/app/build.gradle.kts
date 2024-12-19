@@ -3,8 +3,8 @@ plugins {
 }
 
 val versionMajor = 4
-val versionMinor = 3
-val versionPatch = 2
+val versionMinor = 4
+val versionPatch = 0
 val minimumSdkVersion = 14
 
 android {
@@ -18,7 +18,7 @@ android {
         targetSdk = 34
         versionCode = generateVersionCode()
         versionName = generateVersionName()
-        buildConfigField("String", "WEB_URL", "\"https://hack-mas24.c3nav.de\"")
+        buildConfigField("String", "WEB_URL", "\"https://38c3.c3nav.de\"")
     }
     signingConfigs {
         create("release") {
