@@ -997,7 +997,7 @@ public class MainActivity extends AppCompatActivity
             checkLocationPermission(true);
             Region region = new Region(uuid, null, null, null);
             beaconRegions.put(uuid, region);
-            beaconManager.startRangingBeacons(region);
+            runOnUiThread(() -> beaconManager.startRangingBeacons(region));
         }
 
         @JavascriptInterface
@@ -1005,7 +1005,7 @@ public class MainActivity extends AppCompatActivity
             Region region = beaconRegions.get(uuid);
             if (region != null) {
                 beaconRegions.remove(uuid);
-                beaconManager.stopRangingBeacons(region);
+                runOnUiThread(() -> beaconManager.stopRangingBeacons(region));
             }
         }
 
@@ -1237,7 +1237,7 @@ public class MainActivity extends AppCompatActivity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             WifiRttManager mgr = (WifiRttManager) this.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
             try {
-                if (!mgr.isAvailable()) {
+                if (mgr == null || !mgr.isAvailable()) {
                     processCompleteWifiResultsWithoutRtt(results);
                     return;
                 }
