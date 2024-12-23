@@ -393,6 +393,7 @@ public class MainActivity extends AppCompatActivity
         webView.getSettings().setSupportZoom(false);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setUserAgentString(String.format(Locale.ENGLISH, "c3navClient/Android/%d/%d", BuildConfig.VERSION_CODE, Build.VERSION.SDK_INT));
+        webView.getSettings().setDomStorageEnabled(true);
         webView.addJavascriptInterface(mobileClient, "mobileclient");
 
         webView.setWebViewClient(new WebViewClient() {
