@@ -32,6 +32,6 @@
             android:layout_height="?attr/actionBarSize"
             android:layout_gravity="center"
             android:adjustViewBounds="true"
-            app:srcCompat="@drawable/logo_hackmas24" />
+            app:srcCompat="@drawable/logo_38c3" />
     </LinearLayout>
 </FrameLayout>
