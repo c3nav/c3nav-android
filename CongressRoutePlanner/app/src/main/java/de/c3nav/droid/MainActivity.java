@@ -93,6 +93,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1339,16 +1340,24 @@ public class MainActivity extends AppCompatActivity
                             JSONObject ie = new JSONObject();
                             ie.put("id", infoElem.getId());
                             ie.put("id_ext", infoElem.getIdExt());
-                            JSONArray ieBytea = new JSONArray();
-                            if (infoElem.getBytes().hasArray()) {
-                                byte[] ieBytes = infoElem.getBytes().array();
-                                for (byte ieByte : ieBytes) {
-                                    ieBytea.put((int) ieByte);
+
+                            if (infoElem.getBytes().capacity() <= 0)
+                                continue;
+
+                            try {
+                                JSONArray ieBytea = new JSONArray();
+                                if (infoElem.getBytes().hasArray()) {
+                                    byte[] ieBytes = infoElem.getBytes().array();
+                                    for (byte ieByte : ieBytes) {
+                                        ieBytea.put((int) ieByte);
+                                    }
+                                } else {
+                                    ieBytea.put((int) infoElem.getBytes().get());
                                 }
-                            } else {
-                                ieBytea.put((int) infoElem.getBytes().get());
+                                ie.put("data", ieBytea);
+                            } catch (BufferUnderflowException e) {
+                                e.printStackTrace();
                             }
-                            ie.put("data", ieBytea);
                             iea.put(ie);
                         }
                         jo.put("info_elems", iea);
