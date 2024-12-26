@@ -1331,6 +1331,29 @@ public class MainActivity extends AppCompatActivity
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     jo.put("supports80211mc", result.scan.is80211mcResponder());
                 }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    List<ScanResult.InformationElement> infoElems = result.scan.getInformationElements();
+                    if (infoElems != null) {
+                        JSONArray iea = new JSONArray();
+                        for (ScanResult.InformationElement infoElem : infoElems) {
+                            JSONObject ie = new JSONObject();
+                            ie.put("id", infoElem.getId());
+                            ie.put("id_ext", infoElem.getIdExt());
+                            JSONArray ieBytea = new JSONArray();
+                            if (infoElem.getBytes().hasArray()) {
+                                byte[] ieBytes = infoElem.getBytes().array();
+                                for (byte ieByte : ieBytes) {
+                                    ieBytea.put((int) ieByte);
+                                }
+                            } else {
+                                ieBytea.put((int) infoElem.getBytes().get());
+                            }
+                            ie.put("data", ieBytea);
+                            iea.put(ie);
+                        }
+                        jo.put("info_elems", iea);
+                    }
+                }
                 if (result.rtt != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     JSONObject rtt = new JSONObject();
                     rtt.put("distance_mm", result.rtt.getDistanceMm());
