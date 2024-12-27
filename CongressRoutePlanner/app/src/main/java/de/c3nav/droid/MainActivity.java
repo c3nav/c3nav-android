@@ -94,6 +94,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1318,6 +1319,26 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.R)
+    private String parseArubaAPName(ScanResult.InformationElement infoElem){
+        ByteBuffer buffer = infoElem.getBytes();
+        if (buffer.hasRemaining() && (buffer.get() == (byte) 0x00) && buffer.hasRemaining() && (buffer.get() == (byte) 0x0b) && buffer.hasRemaining() && (buffer.get() == (byte) 0x86)) {
+            if (buffer.hasRemaining() && buffer.get() == (byte) 0x01 && buffer.hasRemaining() && buffer.get() == (byte) 0x03) {
+                if (buffer.hasRemaining()) {
+                    buffer.get();
+                }
+                StringBuilder sb = new StringBuilder();
+                while (buffer.hasRemaining()) {
+                    sb.append((char) buffer.get());
+                }
+                String name = sb.toString();
+                if (!name.isBlank()) {
+                    return name;
+                }
+            }
+        }
+        return null;
+    }
 
     public void processCompleteWifiResults(List<WifiResult> results) {
         JSONArray ja = new JSONArray();
@@ -1334,33 +1355,12 @@ public class MainActivity extends AppCompatActivity
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     List<ScanResult.InformationElement> infoElems = result.scan.getInformationElements();
-                    if (infoElems != null) {
-                        JSONArray iea = new JSONArray();
-                        for (ScanResult.InformationElement infoElem : infoElems) {
-                            JSONObject ie = new JSONObject();
-                            ie.put("id", infoElem.getId());
-                            ie.put("id_ext", infoElem.getIdExt());
-
-                            if (infoElem.getBytes().capacity() <= 0)
-                                continue;
-
-                            try {
-                                JSONArray ieBytea = new JSONArray();
-                                if (infoElem.getBytes().hasArray()) {
-                                    byte[] ieBytes = infoElem.getBytes().array();
-                                    for (byte ieByte : ieBytes) {
-                                        ieBytea.put((int) ieByte);
-                                    }
-                                } else {
-                                    ieBytea.put((int) infoElem.getBytes().get());
-                                }
-                                ie.put("data", ieBytea);
-                            } catch (BufferUnderflowException e) {
-                                e.printStackTrace();
-                            }
-                            iea.put(ie);
+                    for (ScanResult.InformationElement infoElem : infoElems) {
+                        if (infoElem.getId() == 221) {
+                            String name = this.parseArubaAPName(infoElem);
+                            if (name != null)
+                                jo.put("ap_name", name);
                         }
-                        jo.put("info_elems", iea);
                     }
                 }
                 if (result.rtt != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
