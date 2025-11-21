@@ -3,22 +3,22 @@ plugins {
 }
 
 val versionMajor = 4
-val versionMinor = 6
+val versionMinor = 7
 val versionPatch = 0
 val minimumSdkVersion = 14
 
 android {
     namespace = "de.c3nav.droid"
-    compileSdk = 34
-    buildToolsVersion = "34.0.0"
+    compileSdk = 35
+    buildToolsVersion = "35.0.0"
 
     defaultConfig {
         applicationId = "de.c3nav.droid"
         minSdk = minimumSdkVersion
-        targetSdk = 34
+        targetSdk = 35
         versionCode = generateVersionCode()
         versionName = generateVersionName()
-        buildConfigField("String", "WEB_URL", "\"https://eh22.c3nav.de\"")
+        buildConfigField("String", "WEB_URL", "\"https://39c3.c3nav.de\"")
     }
     signingConfigs {
         create("release") {
