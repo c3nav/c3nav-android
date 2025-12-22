@@ -9,8 +9,7 @@
     android:fitsSystemWindows="true"
     tools:openDrawer="start">
 
-    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/black">
@@ -58,7 +57,7 @@
                             android:layout_height="?attr/actionBarSize"
                             android:layout_gravity="center"
                             android:adjustViewBounds="true"
-                            app:srcCompat="@drawable/logo_38c3" />
+                            app:srcCompat="@drawable/logo_39c3" />
                     </LinearLayout>
 
                 </FrameLayout>

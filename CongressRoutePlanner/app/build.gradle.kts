@@ -5,7 +5,7 @@ plugins {
 val versionMajor = 4
 val versionMinor = 7
 val versionPatch = 0
-val minimumSdkVersion = 14
+val minimumSdkVersion = 18
 
 android {
     namespace = "de.c3nav.droid"
