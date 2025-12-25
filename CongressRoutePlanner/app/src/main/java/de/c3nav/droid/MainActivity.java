@@ -102,6 +102,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity
         implements ActivityCompat.OnRequestPermissionsResultCallback {
@@ -1418,12 +1420,28 @@ public class MainActivity extends AppCompatActivity
     }
 
     class WifiReceiver extends BroadcastReceiver {
+        List<ScanResult> wifiList = null;
         public void onReceive(Context c, Intent intent) {
 
             if (!checkLocationPermission()) return;
 
-            List<ScanResult> wifiList = wifiManager.getScanResults();
-            MainActivity.this.processWifiResults(wifiList);
+            wifiList = wifiManager.getScanResults();
+
+            // Range three times within interval, result in seconds
+            int rangeRate = Integer.parseInt(MainActivity.this.sharedPrefs.getString(getString(R.string.wifi_scan_rate_key), "30")) / 3;
+
+            new Timer().schedule(new TimerTask(){
+                List<ScanResult> wifiListCopy = null;
+                @Override
+                public void run(){
+                    if (wifiListCopy == null)
+                        wifiListCopy = wifiList;
+                    else if (wifiList == null || !wifiListCopy.equals(wifiList))
+                        this.cancel();
+
+                    MainActivity.this.processWifiResults(wifiList);
+                }
+            },0, rangeRate * 1000L);
         }
     }
 
