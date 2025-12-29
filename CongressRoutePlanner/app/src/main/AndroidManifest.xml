@@ -10,7 +10,8 @@
     <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/>
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
-
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" tools:node="remove"/>
 
     <application
@@ -54,6 +55,9 @@
                 android:resource="@xml/shortcuts" />
         </activity>
         <activity android:name=".SettingsActivity" />
+        <service
+            android:name=".LiveLocationService"
+            android:foregroundServiceType="connectedDevice|location"/>
     </application>
 
 </manifest>
