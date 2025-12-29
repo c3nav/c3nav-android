@@ -21,10 +21,7 @@ import android.net.ParseException;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.net.wifi.rtt.RangingRequest;
-import android.net.wifi.rtt.RangingResult;
-import android.net.wifi.rtt.RangingResultCallback;
-import android.net.wifi.rtt.WifiRttManager;
+import android.net.wifi.rtt.*;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -35,6 +32,7 @@ import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import androidx.lifecycle.Lifecycle;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.transition.AutoTransition;
@@ -93,17 +91,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static android.net.wifi.ScanResult.*;
+import static android.net.wifi.rtt.ResponderConfig.RESPONDER_AP;
 
 public class MainActivity extends AppCompatActivity
         implements ActivityCompat.OnRequestPermissionsResultCallback {
@@ -121,7 +114,6 @@ public class MainActivity extends AppCompatActivity
     public static final String STATE_SPLASHSCREEN = "splashScreenState";
     public static final String STATE_URI = "urlState";
 
-    private WifiManager wifiManager;
     private PowerManager powerManager;
     private DrawerLayout mDrawerLayout;
     private NavigationView navigationView;
@@ -129,11 +121,15 @@ public class MainActivity extends AppCompatActivity
     private Toolbar toolbar;
     private WebView webView;
     private MobileClient mobileClient;
-    private Map<String, Integer> lastLevelValues = new HashMap<>();
     private boolean locationPermissionRequested;
     private List<String> permissionCache = null;
-    private WifiReceiver wifiReceiver;
     protected CustomSwipeToRefresh swipeLayout;
+
+    private WifiManager wifiManager;
+    private WifiReceiver wifiReceiver;
+    private List<SuggestedWifiPeer> suggestedWifiPeers = new ArrayList<>();
+    private Map<String, ScanResult> lastWifiScanResults = new HashMap<>();
+    private Map<String, RangingResult> lastWifiRangingResults = new HashMap<>();
 
     private LinearLayout splashScreen;
     private VideoView logoAnimView;
@@ -940,6 +936,18 @@ public class MainActivity extends AppCompatActivity
         if (!hasLocationPermission()) return;
         Log.d("c3navWifiScanner", "startScan triggered");
         wifiManager.startScan();
+
+        // Range up to 10 times within interval, result in seconds
+        int rangeRate = Integer.parseInt(MainActivity.this.sharedPrefs.getString(getString(R.string.wifi_scan_rate_key), "30")) / 10;
+        // Lower limit if scan rate is set low. Scanning more than once per 2s is not really feasible
+        rangeRate = Math.max(rangeRate, 2);
+
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                MainActivity.this.startWifiRanging();
+            }
+        }, 0, rangeRate * 1000L);
     }
 
     protected void setInEditor(boolean inEditor) {
@@ -1186,6 +1194,17 @@ public class MainActivity extends AppCompatActivity
         public int getWifiScanRate() {
             return Integer.parseInt(sharedPrefs.getString(getString(R.string.wifi_scan_rate_key), "30"));
         }
+
+        @JavascriptInterface
+        public void suggestedWifiPeersReceived(String receivedPeersJson) {
+            Log.i("c3nav", "Received suggested ranging peers: " + receivedPeersJson);
+            try {
+                JSONArray receivedPeers = new JSONArray(receivedPeersJson);
+                MainActivity.this.suggestedWifiPeersReceived(receivedPeers);
+            } catch (JSONException ex) {
+                Log.w("c3nav", "failed to parse suggested wifi peers", ex);
+            }
+        }
     }
 
     private void evaluateJavascript(String script, ValueCallback<String> resultCallback) {
@@ -1227,102 +1246,176 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    static class WifiResult {
-        public final ScanResult scan;
-        public final RangingResult rtt;
+    static class SuggestedWifiPeer {
+        public final String bssid;
+        public final List<Integer> frequencies;
 
-        WifiResult(@NonNull ScanResult scan, RangingResult rtt) {
-            this.scan = scan;
-            this.rtt = rtt;
+        SuggestedWifiPeer(String bssid, List<Integer> frequencies) {
+            this.bssid = bssid;
+            this.frequencies = frequencies;
         }
     }
 
-    public void processWifiResults(List<ScanResult> results) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            WifiRttManager mgr = (WifiRttManager) this.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
-            try {
-                if (mgr == null || !mgr.isAvailable()) {
-                    processCompleteWifiResultsWithoutRtt(results);
-                    return;
-                }
-            } catch (NullPointerException e) {
-                return;
-            }
-            RangingRequest.Builder builder = new RangingRequest.Builder();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                builder.setRttBurstSize(16);
-            }
-            // todo: use max peers more efficiently. i.e. prefer some APs over others
-            int numPeers = 0;
-            for (ScanResult scanResult : results) {
-                if (scanResult.is80211mcResponder()) {
-                    builder.addAccessPoint(scanResult);
-                    Log.d("rtt", String.format("rtt-capable access point: %s", scanResult.BSSID));
-                    numPeers += 1;
-                    if (numPeers >= RangingRequest.getMaxPeers()) {
-                        break;
-                    }
-                }
-            }
-            if (numPeers == 0) {
-                processCompleteWifiResultsWithoutRtt(results);
-                return;
-            }
-            RangingRequest req = builder.build();
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.NEARBY_WIFI_DEVICES) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.NEARBY_WIFI_DEVICES}, 0);
-                // TODO: we are already requesting permissions in another place, it should all happen centralised
+    public void processWifiScanResults(List<ScanResult> results) {
+        Map<String, ScanResult> resultMap = new HashMap<>();
+        for (ScanResult scanRes : results) {
+            resultMap.put(scanRes.BSSID, scanRes);
+        }
+        this.lastWifiScanResults = resultMap;
+        Log.d("c3nav", String.format("Nearby total ap count: %d", resultMap.size()));
+        pushWifiResultsToApp();
+    }
 
-                processCompleteWifiResultsWithoutRtt(results);
-                return;
-            }
-            Log.d("rtt", String.format("starting rtt ranging with %d peers", numPeers));
-            mgr.startRanging(req, getMainExecutor(), new RangingResultCallback() {
+    private boolean isRanging;
 
+    private void startWifiRanging() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+            return;
+
+        // lock to only have one ranging request at a time.
+        // Sometimes ranging takes ~4s instead of ~1-2s and we don't want to start another one
+        if (isRanging)
+            return;
+        isRanging = true;
+
+        List<ResponderConfig> rangingPeers = new ArrayList<>();
+        List<ScanResult> feasibleScannedPeers = lastWifiScanResults.values()
+                .stream()
+                .filter(ScanResult::is80211mcResponder)
+                // nearer aps with higher rssi are more likely to successfully range
+                .sorted(Comparator.comparingInt(a -> -a.level))
+                .collect(Collectors.toList());
+
+        final int maxRangingPeers = 10;
+        final int maxSuggestions = 10;
+        List<String> includedMacs = new ArrayList<>();
+
+        for (ScanResult scanResult : feasibleScannedPeers) {
+            rangingPeers.add(constructRangingPeerConfig(scanResult.BSSID, scanResult.frequency));
+            includedMacs.add(scanResult.BSSID);
+            Log.d("rtt", String.format("rtt-capable access point (scanned): %s", scanResult.BSSID));
+            if (rangingPeers.size() >= maxRangingPeers)
+                break;
+        }
+
+        int usedSuggestions = 0;
+        for (SuggestedWifiPeer suggestedPeer : suggestedWifiPeers) {
+            if (includedMacs.contains(suggestedPeer.bssid))
+                continue;
+
+            rangingPeers.add(constructRangingPeerConfig(suggestedPeer.bssid, suggestedPeer.frequencies.get(0)));
+            includedMacs.add(suggestedPeer.bssid);
+            Log.d("rtt", String.format("rtt-capable access point (suggested): %s", suggestedPeer.bssid));
+
+            usedSuggestions++;
+            if (usedSuggestions > maxSuggestions)
+                break;
+        }
+
+        if (rangingPeers.isEmpty()) {
+            Log.d("rtt", "no aps found for wifi ranging");
+            return;
+        }
+        Log.d("rtt", String.format("starting rtt ranging with %d peers", rangingPeers.size()));
+        performWifiRangingScans(rangingPeers, new ArrayList<>());
+    }
+
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    private ResponderConfig constructRangingPeerConfig(String bssid, int frequency) {
+        return new ResponderConfig.Builder()
+                .setMacAddress(MacAddress.fromString(bssid))
+                .setResponderType(RESPONDER_AP)
+                .set80211mcSupported(true)
+                .setFrequencyMhz(frequency)
+                .setPreamble(PREAMBLE_VHT)
+                .build();
+    }
+
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    private void performWifiRangingScans(List<ResponderConfig> rangingPeers, List<RangingResult> rangingResults) {
+        // only perform ranging if app is still in foreground. Background ranging is very limited and
+        // will quickly result in lost access to ranging for the app.
+        if (!getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED))
+            return;
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.NEARBY_WIFI_DEVICES) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.NEARBY_WIFI_DEVICES}, 0);
+            return;
+        }
+
+        WifiRttManager mgr = (WifiRttManager) this.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
+        try {
+            if (mgr == null || !mgr.isAvailable())
+                return;
+        } catch (NullPointerException e) {
+            return;
+        }
+
+        // Android only allows to range for a specific amount of peers.
+        // the peers are batched and then the batches are ranged consecutively
+        final int batchSize = RangingRequest.getMaxPeers();
+        List<ResponderConfig> currentBatchPeers;
+        if (rangingPeers.size() <= batchSize)
+            currentBatchPeers = rangingPeers;
+        else
+            currentBatchPeers = rangingPeers.subList(0, batchSize);
+
+        RangingRequest.Builder reqBuilder = new RangingRequest.Builder();
+        reqBuilder.setRttBurstSize(16);
+        reqBuilder.addResponders(currentBatchPeers);
+
+        try {
+            mgr.startRanging(reqBuilder.build(), getMainExecutor(), new RangingResultCallback() {
                 @Override
                 public void onRangingFailure(int code) {
                     Log.w("rtt", String.format("ranging failure: %d", code));
-                    processCompleteWifiResultsWithoutRtt(results);
+                    MainActivity.this.lastWifiRangingResults = new HashMap<>();
+                    isRanging = false;
                 }
 
                 @Override
-                public void onRangingResults(@NonNull List<RangingResult> rangingResults) {
-                    Map<String, WifiResult> resultMap = new HashMap<>();
-                    for (ScanResult result : results) {
-                        resultMap.put(result.BSSID, new WifiResult(result, null));
+                public void onRangingResults(@NonNull List<RangingResult> results) {
+                    for (RangingResult result : results) {
+                        boolean isSuccess = result.getStatus() == RangingResult.STATUS_SUCCESS;
+                        Log.d("rtt", String.format("ranging %s: %s", isSuccess ? "success" : "failure", result));
+                        // check that distance is positive and not more than 100 meters. otherwise it is likely invalid
+                        if (isSuccess && result.getDistanceMm() > 0 && result.getDistanceMm() < 100000)
+                            rangingResults.add(result);
                     }
-                    for (RangingResult result : rangingResults) {
-                        if (result.getStatus() == RangingResult.STATUS_SUCCESS) {
-                            Log.d("rtt", String.format("ranging success: %s", result));
-                            MacAddress mac = result.getMacAddress();
-                            if (mac != null) {
-                                WifiResult entry = resultMap.get(mac.toString());
-                                if (entry != null) {
-                                    ScanResult scanResult = entry.scan;
-                                    resultMap.put(scanResult.BSSID, new WifiResult(scanResult, result));
-                                } else {
-                                    Log.w("rtt", String.format("got result for unknown mac %s", mac));
-                                }
-                            } else {
-                                Log.w("rtt", "no mac address in result");
-                            }
 
-                        } else {
-                            Log.d("rtt", String.format("ranging failure: %s", result));
-                        }
+                    if (rangingPeers.size() <= batchSize) {
+                        // this was the last batch. Process results
+                        processWifiRangingResults(rangingResults);
+                    } else {
+                        // not done, do next batch
+                        performWifiRangingScans(rangingPeers.subList(batchSize, rangingPeers.size()), rangingResults);
                     }
-                    List<WifiResult> finalResults = new ArrayList<>(resultMap.size());
-                    finalResults.addAll(resultMap.values());
-                    processCompleteWifiResults(finalResults);
                 }
             });
-        } else {
-            processCompleteWifiResultsWithoutRtt(results);
+        } catch (Exception ex) {
+            Log.d("rtt", "failed to perform wifi ranging", ex);
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
+    private void processWifiRangingResults(List<RangingResult> rangingResults) {
+        isRanging = false;
+
+        Map<String, RangingResult> resultMap = new HashMap<>();
+        for (RangingResult result : rangingResults) {
+            MacAddress mac = result.getMacAddress();
+            if (mac != null && result.getStatus() == RangingResult.STATUS_SUCCESS) {
+                resultMap.put(mac.toString(), result);
+            }
+        }
+
+        Log.d("rtt", String.format("finished wifi ranging. %d/%d ranged successfully", resultMap.size(), rangingResults.size()));
+        this.lastWifiRangingResults = resultMap;
+        pushWifiResultsToApp();
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.R)
-    private String parseArubaAPName(ScanResult.InformationElement infoElem){
+    private String parseArubaAPName(ScanResult.InformationElement infoElem) {
         ByteBuffer buffer = infoElem.getBytes();
         if (buffer.hasRemaining() && (buffer.get() == (byte) 0x00) && buffer.hasRemaining() && (buffer.get() == (byte) 0x0b) && buffer.hasRemaining() && (buffer.get() == (byte) 0x86)) {
             if (buffer.hasRemaining() && buffer.get() == (byte) 0x01 && buffer.hasRemaining() && buffer.get() == (byte) 0x03) {
@@ -1342,106 +1435,105 @@ public class MainActivity extends AppCompatActivity
         return null;
     }
 
-    public void processCompleteWifiResults(List<WifiResult> results) {
+    public void pushWifiResultsToApp() {
+        Set<String> macAddresses = new HashSet<>();
+        macAddresses.addAll(lastWifiScanResults.keySet());
+        macAddresses.addAll(lastWifiRangingResults.keySet());
+
         JSONArray ja = new JSONArray();
-        Map<String, Integer> newLevelValues = new HashMap<String, Integer>();
-        for (WifiResult result : results) {
+        for (String mac : macAddresses) {
             JSONObject jo = new JSONObject();
             try {
-                jo.put("bssid", result.scan.BSSID);
-                jo.put("ssid", result.scan.SSID);
-                jo.put("rssi", result.scan.level);
-                jo.put("frequency", result.scan.frequency);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    jo.put("supports80211mc", result.scan.is80211mcResponder());
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    List<ScanResult.InformationElement> infoElems = result.scan.getInformationElements();
-                    for (ScanResult.InformationElement infoElem : infoElems) {
-                        if (infoElem.getId() == 221) {
-                            String name = this.parseArubaAPName(infoElem);
-                            if (name != null)
-                                jo.put("ap_name", name);
-                        }
-                    }
-                }
-                if (result.rtt != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    JSONObject rtt = new JSONObject();
-                    rtt.put("distance_mm", result.rtt.getDistanceMm());
-                    rtt.put("distance_std_dev_mm", result.rtt.getDistanceStdDevMm());
-                    rtt.put("num_attempted_measurements", result.rtt.getNumAttemptedMeasurements());
-                    rtt.put("num_successful_measurements", result.rtt.getNumSuccessfulMeasurements());
-                    rtt.put("ranging_timestamp_millis", result.rtt.getRangingTimestampMillis());
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                        rtt.put("measurement_bandwidth", result.rtt.getMeasurementBandwidth());
-                    }
-                    jo.put("rtt", rtt);
-                }
+                if (lastWifiScanResults.containsKey(mac) && lastWifiScanResults.get(mac) != null)
+                    mergeJsonObject(jo, serializeWifiScanResult(Objects.requireNonNull(lastWifiScanResults.get(mac))));
+                if (lastWifiRangingResults.containsKey(mac))
+                    mergeJsonObject(jo, serializeWifiRangingResult(lastWifiRangingResults.get(mac)));
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                    if (SystemClock.elapsedRealtime() - result.scan.timestamp / 1000 > 10000) {
-                        continue;
-                    }
-                    jo.put("last", SystemClock.elapsedRealtime() - result.scan.timestamp / 10000);
-                } else {
-                    // Workaround for older devices: If the signal level did not change
-                    // at all since the last scan, we will assume that it is a cached
-                    // value and should not be used.
-                    newLevelValues.put(result.scan.BSSID, result.scan.level);
-                    if (lastLevelValues.containsKey(result.scan.BSSID)
-                            && lastLevelValues.get(result.scan.BSSID) == result.scan.level) {
-                        Log.d("scan result.scan", "Discard " + result.scan.BSSID + " because level did not change");
-                        continue;
-                    }
-                }
                 ja.put(jo);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-        Log.d("scan result", ja.toString());
+        Log.d("wifi locate result", ja.toString());
         mobileClient.setNearbyStations(ja);
-        lastLevelValues = newLevelValues;
 
-        webView.post(new Runnable() {
-            @Override
-            public void run() {
-                MainActivity.this.evaluateJavascript("nearby_stations_available();");
-            }
-        });
+        webView.post(() -> MainActivity.this.evaluateJavascript("nearby_stations_available();"));
     }
 
-    public void processCompleteWifiResultsWithoutRtt(List<ScanResult> results) {
-        List<WifiResult> new_results = new ArrayList<>(results.size());
-        for (ScanResult result : results) {
-            new_results.add(new WifiResult(result, null));
+    private void mergeJsonObject(JSONObject target, JSONObject source) throws JSONException {
+        Iterator<String> it = source.keys();
+        while (it.hasNext()) {
+            String key = it.next();
+            target.put(key, source.get(key));
         }
-        processCompleteWifiResults(new_results);
+    }
+
+    private JSONObject serializeWifiScanResult(ScanResult scan) throws JSONException {
+        JSONObject jo = new JSONObject();
+        jo.put("bssid", scan.BSSID);
+        jo.put("ssid", scan.SSID);
+        jo.put("rssi", scan.level);
+        jo.put("frequency", scan.frequency);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            jo.put("supports80211mc", scan.is80211mcResponder());
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            List<ScanResult.InformationElement> infoElems = scan.getInformationElements();
+            for (ScanResult.InformationElement infoElem : infoElems) {
+                if (infoElem.getId() == 221) {
+                    String name = this.parseArubaAPName(infoElem);
+                    if (name != null)
+                        jo.put("ap_name", name);
+                }
+            }
+        }
+        jo.put("last", SystemClock.elapsedRealtime() - scan.timestamp / 1000);
+        return jo;
+    }
+
+    private JSONObject serializeWifiRangingResult(RangingResult rttResult) throws JSONException {
+        JSONObject jo = new JSONObject();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+            return jo;
+
+        if (rttResult.getMacAddress() != null)
+            jo.put("bssid", rttResult.getMacAddress().toString());
+        jo.put("frequency", rttResult.getMeasurementChannelFrequencyMHz());
+
+        JSONObject rtt = new JSONObject();
+        rtt.put("distance_mm", rttResult.getDistanceMm());
+        rtt.put("distance_std_dev_mm", rttResult.getDistanceStdDevMm());
+        rtt.put("num_attempted_measurements", rttResult.getNumAttemptedMeasurements());
+        rtt.put("num_successful_measurements", rttResult.getNumSuccessfulMeasurements());
+        rtt.put("ranging_timestamp_millis", rttResult.getRangingTimestampMillis());
+        rtt.put("measurement_bandwidth", rttResult.getMeasurementBandwidth());
+        jo.put("rtt", rtt);
+        jo.put("last", SystemClock.elapsedRealtime() - rttResult.getRangingTimestampMillis());
+        return jo;
+    }
+
+    public void suggestedWifiPeersReceived(JSONArray suggestedWifiPeersJson) throws JSONException {
+        List<SuggestedWifiPeer> parsedPeers = new ArrayList<>();
+        for (int i = 0; i < suggestedWifiPeersJson.length(); i++) {
+            JSONObject obj = suggestedWifiPeersJson.getJSONObject(i);
+
+            List<Integer> parsedFrequencies = new ArrayList<>();
+            JSONArray frequencyArr = obj.getJSONArray("frequencies");
+            for (int j = 0; j < frequencyArr.length(); j++)
+                parsedFrequencies.add(frequencyArr.getInt(j));
+
+            parsedPeers.add(new SuggestedWifiPeer(obj.getString("bssid"), parsedFrequencies));
+        }
+
+        this.suggestedWifiPeers = parsedPeers;
+        Log.d("c3nav", String.format("received new suggested wifi peers. count: %d", parsedPeers.size()));
     }
 
     class WifiReceiver extends BroadcastReceiver {
-        List<ScanResult> wifiList = null;
         public void onReceive(Context c, Intent intent) {
-
             if (!checkLocationPermission()) return;
-
-            wifiList = wifiManager.getScanResults();
-
-            // Range three times within interval, result in seconds
-            int rangeRate = Integer.parseInt(MainActivity.this.sharedPrefs.getString(getString(R.string.wifi_scan_rate_key), "30")) / 3;
-
-            new Timer().schedule(new TimerTask(){
-                List<ScanResult> wifiListCopy = null;
-                @Override
-                public void run(){
-                    if (wifiListCopy == null)
-                        wifiListCopy = wifiList;
-                    else if (wifiList == null || !wifiListCopy.equals(wifiList))
-                        this.cancel();
-
-                    MainActivity.this.processWifiResults(wifiList);
-                }
-            },0, rangeRate * 1000L);
+            List<ScanResult> scanList = wifiManager.getScanResults();
+            MainActivity.this.processWifiScanResults(scanList);
         }
     }
 
