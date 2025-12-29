@@ -29,6 +29,7 @@ import android.os.PowerManager;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 
+import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
@@ -94,6 +95,7 @@ import org.json.JSONObject;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static android.net.wifi.ScanResult.*;
 import static android.net.wifi.rtt.ResponderConfig.RESPONDER_AP;
@@ -129,7 +131,7 @@ public class MainActivity extends AppCompatActivity
     private WifiReceiver wifiReceiver;
     private List<SuggestedWifiPeer> suggestedWifiPeers = new ArrayList<>();
     private Map<String, ScanResult> lastWifiScanResults = new HashMap<>();
-    private Map<String, RangingResult> lastWifiRangingResults = new HashMap<>();
+    private Map<String, List<Pair<Long, RangingResult>>> lastWifiRangingResults = new HashMap<>();
 
     private LinearLayout splashScreen;
     private VideoView logoAnimView;
@@ -938,16 +940,19 @@ public class MainActivity extends AppCompatActivity
         wifiManager.startScan();
 
         // Range up to 10 times within interval, result in seconds
-        int rangeRate = Integer.parseInt(MainActivity.this.sharedPrefs.getString(getString(R.string.wifi_scan_rate_key), "30")) / 10;
+        int scanRate = Integer.parseInt(MainActivity.this.sharedPrefs.getString(getString(R.string.wifi_scan_rate_key), "30"));
+        int rangeRate = scanRate / 10;
         // Lower limit if scan rate is set low. Scanning more than once per 2s is not really feasible
         rangeRate = Math.max(rangeRate, 2);
 
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                MainActivity.this.startWifiRanging();
-            }
-        }, 0, rangeRate * 1000L);
+        for (int delay = 0; delay < scanRate * 1000; delay += rangeRate * 1000) {
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    MainActivity.this.startWifiRanging();
+                }
+            }, delay);
+        }
     }
 
     protected void setInEditor(boolean inEditor) {
@@ -1257,12 +1262,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void processWifiScanResults(List<ScanResult> results) {
-        Map<String, ScanResult> resultMap = new HashMap<>();
+        lastWifiScanResults.clear();
         for (ScanResult scanRes : results) {
-            resultMap.put(scanRes.BSSID, scanRes);
+            lastWifiScanResults.put(scanRes.BSSID, scanRes);
         }
-        this.lastWifiScanResults = resultMap;
-        Log.d("c3nav", String.format("Nearby total ap count: %d", resultMap.size()));
+        Log.d("c3nav", String.format("Nearby total ap count: %d", lastWifiScanResults.size()));
         pushWifiResultsToApp();
     }
 
@@ -1314,6 +1318,7 @@ public class MainActivity extends AppCompatActivity
 
         if (rangingPeers.isEmpty()) {
             Log.d("rtt", "no aps found for wifi ranging");
+            isRanging = false;
             return;
         }
         Log.d("rtt", String.format("starting rtt ranging with %d peers", rangingPeers.size()));
@@ -1369,7 +1374,7 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onRangingFailure(int code) {
                     Log.w("rtt", String.format("ranging failure: %d", code));
-                    MainActivity.this.lastWifiRangingResults = new HashMap<>();
+                    MainActivity.this.lastWifiRangingResults.clear();
                     isRanging = false;
                 }
 
@@ -1401,16 +1406,32 @@ public class MainActivity extends AppCompatActivity
     private void processWifiRangingResults(List<RangingResult> rangingResults) {
         isRanging = false;
 
-        Map<String, RangingResult> resultMap = new HashMap<>();
+        // remove outdated data
+        final int rangingDateMaxAge = 10000;
+        for (Map.Entry<String, List<Pair<Long, RangingResult>>> entry : lastWifiRangingResults.entrySet()) {
+            List<Pair<Long, RangingResult>> withoutOutdated = entry.getValue().stream()
+                    .filter(res -> System.currentTimeMillis() - res.first <= rangingDateMaxAge)
+                    .collect(Collectors.toList());
+            entry.setValue(withoutOutdated);
+        }
+
+        // add new data
+        int successfulRanges = 0;
         for (RangingResult result : rangingResults) {
             MacAddress mac = result.getMacAddress();
             if (mac != null && result.getStatus() == RangingResult.STATUS_SUCCESS) {
-                resultMap.put(mac.toString(), result);
+                List<Pair<Long, RangingResult>> existingResults = lastWifiRangingResults.get(mac.toString());
+
+                if (existingResults == null)
+                    existingResults = new ArrayList<>();
+                existingResults.add(new Pair<>(System.currentTimeMillis(), result));
+
+                lastWifiRangingResults.put(mac.toString(), existingResults);
+                successfulRanges++;
             }
         }
 
-        Log.d("rtt", String.format("finished wifi ranging. %d/%d ranged successfully", resultMap.size(), rangingResults.size()));
-        this.lastWifiRangingResults = resultMap;
+        Log.d("rtt", String.format("finished wifi ranging. %d/%d ranged successfully", successfulRanges, rangingResults.size()));
         pushWifiResultsToApp();
     }
 
@@ -1491,24 +1512,35 @@ public class MainActivity extends AppCompatActivity
         return jo;
     }
 
-    private JSONObject serializeWifiRangingResult(RangingResult rttResult) throws JSONException {
+    private JSONObject serializeWifiRangingResult(List<Pair<Long, RangingResult>> rttResults) throws JSONException {
         JSONObject jo = new JSONObject();
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
             return jo;
+        if (rttResults.isEmpty())
+            return jo;
 
-        if (rttResult.getMacAddress() != null)
-            jo.put("bssid", rttResult.getMacAddress().toString());
-        jo.put("frequency", rttResult.getMeasurementChannelFrequencyMHz());
+        RangingResult latest = rttResults.get(rttResults.size() - 1).second;
 
+        if (latest.getMacAddress() != null)
+            jo.put("bssid", latest.getMacAddress().toString());
+        jo.put("frequency", latest.getMeasurementChannelFrequencyMHz());
+
+        double distanceMm = rttResults.stream().mapToInt(res -> res.second.getDistanceMm()).average().orElse(0);
+        double distanceStdDevMm = rttResults.stream().mapToInt(res -> res.second.getDistanceStdDevMm()).average().orElse(0);
+        int attemptedMeasurements = rttResults.stream().mapToInt(res -> res.second.getNumAttemptedMeasurements()).sum();
+        int successfulMeasurements = rttResults.stream().mapToInt(res -> res.second.getNumSuccessfulMeasurements()).sum();
+
+        // timestamps are for outdated so we use the newest ones since we know the ap
+        // was heard in the last ranging averaging interval
         JSONObject rtt = new JSONObject();
-        rtt.put("distance_mm", rttResult.getDistanceMm());
-        rtt.put("distance_std_dev_mm", rttResult.getDistanceStdDevMm());
-        rtt.put("num_attempted_measurements", rttResult.getNumAttemptedMeasurements());
-        rtt.put("num_successful_measurements", rttResult.getNumSuccessfulMeasurements());
-        rtt.put("ranging_timestamp_millis", rttResult.getRangingTimestampMillis());
-        rtt.put("measurement_bandwidth", rttResult.getMeasurementBandwidth());
+        rtt.put("distance_mm", distanceMm);
+        rtt.put("distance_std_dev_mm", distanceStdDevMm);
+        rtt.put("num_attempted_measurements", attemptedMeasurements);
+        rtt.put("num_successful_measurements", successfulMeasurements);
+        rtt.put("ranging_timestamp_millis", latest.getRangingTimestampMillis());
+        rtt.put("measurement_bandwidth", latest.getMeasurementBandwidth());
         jo.put("rtt", rtt);
-        jo.put("last", SystemClock.elapsedRealtime() - rttResult.getRangingTimestampMillis());
+        jo.put("last", SystemClock.elapsedRealtime() - latest.getRangingTimestampMillis());
         return jo;
     }
 
