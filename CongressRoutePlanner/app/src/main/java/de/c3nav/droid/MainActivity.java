@@ -1257,12 +1257,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void processWifiScanResults(List<ScanResult> results) {
-        Map<String, ScanResult> resultMap = new HashMap<>();
+        lastWifiScanResults.clear();
         for (ScanResult scanRes : results) {
-            resultMap.put(scanRes.BSSID, scanRes);
+            lastWifiScanResults.put(scanRes.BSSID, scanRes);
         }
-        this.lastWifiScanResults = resultMap;
-        Log.d("c3nav", String.format("Nearby total ap count: %d", resultMap.size()));
+        Log.d("c3nav", String.format("Nearby total ap count: %d", lastWifiScanResults.size()));
         pushWifiResultsToApp();
     }
 
@@ -1369,7 +1368,7 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onRangingFailure(int code) {
                     Log.w("rtt", String.format("ranging failure: %d", code));
-                    MainActivity.this.lastWifiRangingResults = new HashMap<>();
+                    MainActivity.this.lastWifiRangingResults.clear();
                     isRanging = false;
                 }
 
@@ -1401,16 +1400,15 @@ public class MainActivity extends AppCompatActivity
     private void processWifiRangingResults(List<RangingResult> rangingResults) {
         isRanging = false;
 
-        Map<String, RangingResult> resultMap = new HashMap<>();
+        lastWifiRangingResults.clear();
         for (RangingResult result : rangingResults) {
             MacAddress mac = result.getMacAddress();
             if (mac != null && result.getStatus() == RangingResult.STATUS_SUCCESS) {
-                resultMap.put(mac.toString(), result);
+                lastWifiRangingResults.put(mac.toString(), result);
             }
         }
 
-        Log.d("rtt", String.format("finished wifi ranging. %d/%d ranged successfully", resultMap.size(), rangingResults.size()));
-        this.lastWifiRangingResults = resultMap;
+        Log.d("rtt", String.format("finished wifi ranging. %d/%d ranged successfully", lastWifiRangingResults.size(), rangingResults.size()));
         pushWifiResultsToApp();
     }
 
