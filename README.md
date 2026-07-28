@@ -13,4 +13,8 @@ based on Wifi signals.
 You can get the app on the [Play Store](https://play.google.com/store/apps/details?id=de.c3nav.droid),
 on [GitHub](https://github.com/c3nav/c3nav-android/releases) or our own [F-Droid Repository](https://f-droid.c3nav.de/fdroid/repo/). Installing from the main F-Droid repository is not recommended since releases will often be out of date.
 
+### Documentation
+* [Floor Mapping & Indoor Positioning How-To](FLOOR_MAPPING_HOWTO.md)
+
 [![Play Store](https://developer.android.com/images/brand/en_app_rgb_wo_60.png)](https://play.google.com/store/apps/details?id=de.c3nav.droid)
+
